@@ -51,6 +51,8 @@ class Render {
   foreign static color(r, g, b, a)
   static color(r, g, b) { color(r, g, b, 1.0) }
   static color() { color(1.0, 1.0, 1.0, 1.0) }
+  foreign static rect(x, y, z, width, height)
+  foreign static rect(x, y, z, width, height, texture)
   foreign static square(x, y, z, size)
   foreign static square(x, y, z, size, texture)
   foreign static line(x1, y1, z1, x2, y2, z2, width)

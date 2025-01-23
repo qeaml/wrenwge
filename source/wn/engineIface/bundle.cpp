@@ -6,9 +6,9 @@ using namespace nwge;
 
 static void bundleNqTexture(WrenVM *vm)
 {
-  auto *bundle = reinterpret_cast<data::Bundle*>(wrenGetSlotForeign(vm, 0));
+  auto *bundle = bundleInSlot(vm, 0);
   const char *name = wrenGetSlotString(vm, 1);
-  auto *texture = reinterpret_cast<render::Texture*>(wrenGetSlotForeign(vm, 2));
+  auto *texture = textureInSlot(vm, 0);
   bundle->nqTexture(name, *texture);
 }
 

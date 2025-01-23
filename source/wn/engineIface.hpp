@@ -1,6 +1,7 @@
 #pragma once
 
 #include "wren.hpp"
+#include <nwge/data/bundle.hpp>
 
 WrenForeignMethodFn bindForeignMethod(
   WrenVM* vm,
@@ -20,3 +21,11 @@ WrenForeignClassMethods bindForeignClass(
 WrenForeignClassMethods bindEngineClass(const char *className);
 WrenForeignClassMethods bindBundleClass();
 WrenForeignClassMethods bindTextureClass();
+
+inline nwge::data::Bundle *bundleInSlot(WrenVM *vm, int slot) {
+  return reinterpret_cast<nwge::data::Bundle*>(wrenGetSlotForeign(vm, slot));
+}
+
+inline nwge::render::Texture *textureInSlot(WrenVM *vm, int slot) {
+  return reinterpret_cast<nwge::render::Texture*>(wrenGetSlotForeign(vm, slot));
+}

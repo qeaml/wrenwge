@@ -20,6 +20,27 @@ static void color(WrenVM *vm)
   render::color({red, green, blue, alpha});
 }
 
+static void rectNoTexture(WrenVM *vm)
+{
+  auto x = wrenGetSlotDouble(vm, 1);
+  auto y = wrenGetSlotDouble(vm, 2);
+  auto z = wrenGetSlotDouble(vm, 3);
+  auto width = wrenGetSlotDouble(vm, 4);
+  auto height = wrenGetSlotDouble(vm, 5);
+  render::rect({x, y, z}, {width, height});
+}
+
+static void rectWithTexture(WrenVM *vm)
+{
+  auto x = wrenGetSlotDouble(vm, 1);
+  auto y = wrenGetSlotDouble(vm, 2);
+  auto z = wrenGetSlotDouble(vm, 3);
+  auto width = wrenGetSlotDouble(vm, 4);
+  auto height = wrenGetSlotDouble(vm, 5);
+  auto *texture = textureInSlot(vm, 6);
+  render::rect({x, y, z}, {width, height}, *texture);
+}
+
 static void squareNoTexture(WrenVM *vm)
 {
   auto x = wrenGetSlotDouble(vm, 1);
@@ -35,7 +56,7 @@ static void squareWithTexture(WrenVM *vm)
   auto y = wrenGetSlotDouble(vm, 2);
   auto z = wrenGetSlotDouble(vm, 3);
   auto size = wrenGetSlotDouble(vm, 4);
-  auto *texture = (render::Texture*)wrenGetSlotForeign(vm, 5);
+  auto *texture = textureInSlot(vm, 5);
   render::square({x, y, z}, f32(size), *texture);
 }
 
@@ -70,6 +91,8 @@ WrenForeignMethodFn bindRenderMethod(bool isStatic, const char *signature)
 {
   BIND(true, "clear(_,_,_)", clear)
   BIND(true, "color(_,_,_,_)", color)
+  BIND(true, "rect(_,_,_,_,_)", rectNoTexture)
+  BIND(true, "rect(_,_,_,_,_,_)", rectWithTexture)
   BIND(true, "square(_,_,_,_)", squareNoTexture)
   BIND(true, "square(_,_,_,_,_)", squareWithTexture)
   BIND(true, "line(_,_,_,_,_,_,_)", line)
