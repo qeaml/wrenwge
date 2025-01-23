@@ -20,3 +20,5 @@
 
 *.gitattributes text export-ignore linguist-language=gitattributes linguist-detectable=true linguist-documentation=false
 .gitignore text export-ignore
+
+source/wren/** liguist-vendored
