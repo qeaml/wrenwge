@@ -1,9 +1,14 @@
-import "engine" for State, Console, Render
+import "engine" for State, Console, Render, Bundle, Texture
 
 class InitState is State {
   construct new() {
     _timer = 0.0
     _announced = false
+
+    _bundle = Bundle.new("sample")
+    _texture = Texture.new()
+
+    _bundle.nqTexture("fen.jpg", _texture)
   }
 
   tick(delta) {
@@ -22,5 +27,7 @@ class InitState is State {
     Render.line(0.1, 0.15, 0.1, 0.9, 0.15, 0.1, 1)
     Render.color(0.5, 1.0, 0.5)
     Render.square(0.875, 0.125, 0.2, 0.05)
+    Render.color()
+    Render.square(0.5, 0.5, 0.5, 0.5, _texture)
   }
 }

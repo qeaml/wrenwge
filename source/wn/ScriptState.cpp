@@ -1,6 +1,7 @@
 #include "ScriptState.hpp"
 #include "wren.h"
 #include <nwge/console.hpp>
+#include <nwge/dialog.hpp>
 
 using namespace nwge;
 
@@ -13,7 +14,11 @@ public:
   {}
 
   bool init() override {
-    wrenInterpret(mRuntime.vm(), "preload", "import \"main\"");
+    auto res = wrenInterpret(mRuntime.vm(), "preload", "import \"main\"");
+    if(res != WREN_RESULT_SUCCESS) {
+      dialog::error("Script Error", "A script error has occurred.");
+      return false;
+    }
 
     wrenEnsureSlots(mRuntime.vm(), 1);
     wrenGetVariable(mRuntime.vm(), "main", mInitialState, 0);

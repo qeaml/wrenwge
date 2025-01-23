@@ -47,15 +47,6 @@ static WrenLoadModuleResult loadModule(WrenVM *vm, const char *name)
   return result;
 }
 
-static WrenForeignClassMethods bindForeignClass(
-    WrenVM* vm, const char* module, const char* className)
-{
-  WrenForeignClassMethods methods;
-  methods.allocate = nullptr;
-  methods.finalize = nullptr;
-  return methods;
-}
-
 static void write(WrenVM* vm, const char* text)
 {
   console::print(text);

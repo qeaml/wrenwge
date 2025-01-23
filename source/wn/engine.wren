@@ -4,8 +4,8 @@ class State {
     assert(false, "Do not instantiate State directly.")
   }
 
-  preload() {}
   init() {}
+  on(evt) {}
   tick(delta) {}
   render() {}
 }
@@ -16,6 +16,7 @@ class SubState {
     assert(false, "Do not instantiate SubState directly.")
   }
 
+  on(evt) {}
   tick() {}
   render() {}
 }
@@ -31,6 +32,18 @@ class Console {
   static error(message) { print(2, message) }
 }
 
+// from <nwge/data/bundle.hpp>
+foreign class Bundle {
+  construct new(name) {}
+
+  foreign nqTexture(name, out)
+}
+
+// from <nwge/render/Texture.hpp>
+foreign class Texture {
+  construct new() {}
+}
+
 // from <nwge/render/*.hpp>
 class Render {
   foreign static clear(r, g, b)
@@ -39,6 +52,7 @@ class Render {
   static color(r, g, b) { color(r, g, b, 1.0) }
   static color() { color(1.0, 1.0, 1.0, 1.0) }
   foreign static square(x, y, z, size)
+  foreign static square(x, y, z, size, texture)
   foreign static line(x1, y1, z1, x2, y2, z2, width)
   foreign static text(x, y, z, text, height)
 }
