@@ -38,7 +38,13 @@ static void rectWithTexture(WrenVM *vm)
   auto width = wrenGetSlotDouble(vm, 4);
   auto height = wrenGetSlotDouble(vm, 5);
   auto *texture = textureInSlot(vm, 6);
-  render::rect({x, y, z}, {width, height}, *texture);
+  auto texX = wrenGetSlotDouble(vm, 7);
+  auto texY = wrenGetSlotDouble(vm, 8);
+  auto texW = wrenGetSlotDouble(vm, 9);
+  auto texH = wrenGetSlotDouble(vm, 10);
+  render::rect(
+    {x, y, z}, {width, height},
+    *texture, {.pos={texX, texY}, .sz={texW, texH}});
 }
 
 static void squareNoTexture(WrenVM *vm)
@@ -57,7 +63,13 @@ static void squareWithTexture(WrenVM *vm)
   auto z = wrenGetSlotDouble(vm, 3);
   auto size = wrenGetSlotDouble(vm, 4);
   auto *texture = textureInSlot(vm, 5);
-  render::square({x, y, z}, f32(size), *texture);
+  auto texX = wrenGetSlotDouble(vm, 6);
+  auto texY = wrenGetSlotDouble(vm, 7);
+  auto texW = wrenGetSlotDouble(vm, 8);
+  auto texH = wrenGetSlotDouble(vm, 9);
+  render::square(
+    {x, y, z}, f32(size),
+    *texture, {.pos={texX, texY}, .sz={texW, texH}});
 }
 
 static void line(WrenVM *vm)
@@ -92,9 +104,9 @@ WrenForeignMethodFn bindRenderMethod(bool isStatic, const char *signature)
   BIND(true, "clear(_,_,_)", clear)
   BIND(true, "color(_,_,_,_)", color)
   BIND(true, "rect(_,_,_,_,_)", rectNoTexture)
-  BIND(true, "rect(_,_,_,_,_,_)", rectWithTexture)
+  BIND(true, "rect(_,_,_,_,_,_,_,_,_,_)", rectWithTexture)
   BIND(true, "square(_,_,_,_)", squareNoTexture)
-  BIND(true, "square(_,_,_,_,_)", squareWithTexture)
+  BIND(true, "square(_,_,_,_,_,_,_,_,_)", squareWithTexture)
   BIND(true, "line(_,_,_,_,_,_,_)", line)
   BIND(true, "text(_,_,_,_,_)", text)
   return nullptr;

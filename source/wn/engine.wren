@@ -52,9 +52,15 @@ class Render {
   static color(r, g, b) { color(r, g, b, 1.0) }
   static color() { color(1.0, 1.0, 1.0, 1.0) }
   foreign static rect(x, y, z, width, height)
-  foreign static rect(x, y, z, width, height, texture)
+  static rect(x, y, z, width, height, texture) {
+    rect(x, y, z, width, height, texture, 0.0, 0.0, 1.0, 1.0)
+  }
+  foreign static rect(x, y, z, width, height, texture, texX, texY, texW, texH)
   foreign static square(x, y, z, size)
-  foreign static square(x, y, z, size, texture)
+  static square(x, y, z, size, texture) {
+    square(x, y, z, size, texture, 0.0, 0.0, 1.0, 1.0)
+  }
+  foreign static square(x, y, z, size, texture, texX, texY, texW, texH)
   foreign static line(x1, y1, z1, x2, y2, z2, width)
   foreign static text(x, y, z, text, height)
 }
