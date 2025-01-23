@@ -6,10 +6,10 @@ using namespace nwge;
 
 static void bundleNqTexture(WrenVM *vm)
 {
-  auto *bundle = (data::Bundle **)wrenGetSlotForeign(vm, 0);
+  auto *bundle = reinterpret_cast<data::Bundle*>(wrenGetSlotForeign(vm, 0));
   const char *name = wrenGetSlotString(vm, 1);
-  auto *texture = (render::Texture **)wrenGetSlotForeign(vm, 2);
-  (*bundle)->nqTexture(name, **texture);
+  auto *texture = reinterpret_cast<render::Texture*>(wrenGetSlotForeign(vm, 2));
+  bundle->nqTexture(name, *texture);
 }
 
 #define BIND(methodStatic, methodSignature, method) \
@@ -25,15 +25,15 @@ WrenForeignMethodFn bindBundleMethod(bool isStatic, const char *signature)
 
 static void bundleAllocate(WrenVM *vm)
 {
-  auto *bundle = (data::Bundle **)wrenSetSlotNewForeign(vm, 0, 0, sizeof(data::Bundle *));
+  auto *bundle = wrenSetSlotNewForeign(vm, 0, 0, sizeof(data::Bundle));
   const char *name = wrenGetSlotString(vm, 1);
-  *bundle = new data::Bundle(name);
+  new(bundle) data::Bundle(name);
 }
 
-static void bundleFinalize(void *data)
+static void bundleFinalize(void *ptr)
 {
-  auto *bundle = (data::Bundle **)data;
-  delete *bundle;
+  auto *bundle = reinterpret_cast<data::Bundle*>(ptr);
+  bundle->~Bundle();
 }
 
 WrenForeignClassMethods bindBundleClass()

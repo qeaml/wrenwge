@@ -16,14 +16,14 @@ WrenForeignMethodFn bindTextureMethod(bool isStatic, const char *signature)
 
 static void textureAllocate(WrenVM *vm)
 {
-  auto **texture = (render::Texture**)wrenSetSlotNewForeign(vm, 0, 0, sizeof(render::Texture*));
-  *texture = new render::Texture();
+  auto *texture = wrenSetSlotNewForeign(vm, 0, 0, sizeof(render::Texture));
+  new(texture) render::Texture();
 }
 
 static void textureFinalize(void *data)
 {
-  auto *texture = (render::Texture**)data;
-  delete *texture;
+  auto *texture = reinterpret_cast<render::Texture*>(data);
+  texture->~Texture();
 }
 
 WrenForeignClassMethods bindTextureClass()

@@ -35,8 +35,8 @@ static void squareWithTexture(WrenVM *vm)
   auto y = wrenGetSlotDouble(vm, 2);
   auto z = wrenGetSlotDouble(vm, 3);
   auto size = wrenGetSlotDouble(vm, 4);
-  auto *texture = (render::Texture **)wrenGetSlotForeign(vm, 5);
-  render::square({x, y, z}, f32(size), **texture);
+  auto *texture = (render::Texture*)wrenGetSlotForeign(vm, 5);
+  render::square({x, y, z}, f32(size), *texture);
 }
 
 static void line(WrenVM *vm)
