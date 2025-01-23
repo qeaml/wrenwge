@@ -46,21 +46,25 @@ foreign class Texture {
 
 // from <nwge/render/*.hpp>
 class Render {
-  foreign static clear(r, g, b)
-  static clear() { clear(0.3, 0.3, 0.3) }
-  foreign static color(r, g, b, a)
-  static color(r, g, b) { color(r, g, b, 1.0) }
-  static color() { color(1.0, 1.0, 1.0, 1.0) }
-  foreign static rect(x, y, z, width, height)
-  static rect(x, y, z, width, height, texture) {
-    rect(x, y, z, width, height, texture, 0.0, 0.0, 1.0, 1.0)
+  foreign static clear(color)
+  static clear() { clear([]) }
+
+  foreign static color(color)
+  static color() { color([]) }
+
+  foreign static rect(pos, extents)
+  foreign static rect(pos, extents, texture, texCoord)
+  static rect(pos, extents, texture) {
+    rect(pos, extents, texture, [0.0, 0.0, 1.0, 1.0])
   }
-  foreign static rect(x, y, z, width, height, texture, texX, texY, texW, texH)
-  foreign static square(x, y, z, size)
-  static square(x, y, z, size, texture) {
-    square(x, y, z, size, texture, 0.0, 0.0, 1.0, 1.0)
+
+  foreign static square(pos, size)
+  foreign static square(pos, size, texture, texCoord)
+  static square(pos, size, texture) {
+    square(pos, size, texture, [0.0, 0.0, 1.0, 1.0])
   }
-  foreign static square(x, y, z, size, texture, texX, texY, texW, texH)
-  foreign static line(x1, y1, z1, x2, y2, z2, width)
-  foreign static text(x, y, z, text, height)
+
+  foreign static line(posA, posB, width)
+
+  foreign static text(pos, text, height)
 }
