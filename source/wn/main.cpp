@@ -74,6 +74,7 @@ s32 main(s32 argc, CStr *argv) {
   ScriptRuntime scriptRuntime{fileName};
 
   startPtr(createScriptState(std::move(scriptRuntime), initialStateName->data()), {
+    .loadBlocking = config::LoadBlocking::Always,
     .appName = *name,
   });
   return 0;

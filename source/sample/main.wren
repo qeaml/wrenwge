@@ -1,4 +1,5 @@
 import "engine" for State, Console, Render, Bundle, Texture
+import "atlas" for TextureAtlas
 
 class InitState is State {
   construct new() {
@@ -7,8 +8,11 @@ class InitState is State {
 
     _bundle = Bundle.new("sample")
     _texture = Texture.new()
-
     _bundle.nqTexture("fen.jpg", _texture)
+
+    _tilesTexture = Texture.new()
+    _bundle.nqTexture("tiles.png", _tilesTexture)
+    _tiles = TextureAtlas.new(_tilesTexture, [16, 16])
   }
 
   tick(delta) {
@@ -31,5 +35,7 @@ class InitState is State {
     Render.color()
     Render.square([0.5, 0.5, 0.5], 0.5, _texture)
     Render.rect([0.25, 0.75, 0.5], [0.5, 0.1], _texture)
+
+    Render.rect([0.5, 0.9, 0.1], [0.2, 0.1], _tilesTexture, _tiles.texCoord([0, 14], [4, 2]))
   }
 }

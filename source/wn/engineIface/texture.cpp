@@ -1,5 +1,4 @@
 #include "../engineIface.hpp"
-#include "wren.h"
 #include <nwge/render/Texture.hpp>
 
 using namespace nwge;

@@ -1,5 +1,4 @@
 #include "../engineIface.hpp"
-#include "wren.h"
 #include <nwge/data/bundle.hpp>
 
 using namespace nwge;
@@ -8,7 +7,7 @@ static void bundleNqTexture(WrenVM *vm)
 {
   auto *bundle = bundleInSlot(vm, 0);
   const char *name = wrenGetSlotString(vm, 1);
-  auto *texture = textureInSlot(vm, 0);
+  auto *texture = textureInSlot(vm, 2);
   bundle->nqTexture(name, *texture);
 }
 

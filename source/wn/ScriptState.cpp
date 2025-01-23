@@ -1,5 +1,4 @@
 #include "ScriptState.hpp"
-#include "wren.h"
 #include <nwge/console.hpp>
 #include <nwge/dialog.hpp>
 
