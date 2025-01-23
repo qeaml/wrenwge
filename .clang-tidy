@@ -25,6 +25,7 @@ Checks:
   - misc-uniqueptr-reset-release
   - -modernize-use-trailing-return-type
   - -readability-uppercase-literal-suffix
+  - -readability-identifier-length
 CheckOptions:
   google-runtime-int.UnsignedTypePrefix: u
   google-runtime-int.SignedTypePrefix: s

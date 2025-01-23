@@ -1,0 +1,3 @@
+[submodule "source/plugins/nwge"]
+	path = source/plugins/nwge
+	url = https://github.com/nwge-games/nwge-plugins.git

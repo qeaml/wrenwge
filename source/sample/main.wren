@@ -1,0 +1,26 @@
+import "engine" for State, Console, Render
+
+class InitState is State {
+  construct new() {
+    _timer = 0.0
+    _announced = false
+  }
+
+  tick(delta) {
+    _timer = _timer + delta
+    if(_timer >= 3.0 && !_announced) {
+      Console.print("3 seconds have passed")
+      _announced = true
+    }
+  }
+
+  render() {
+    Render.clear(0.0, 0.0, 0.0)
+    Render.color()
+    Render.text(0.1, 0.1, 0.1, "Hello, world of Wren!", 0.05)
+    Render.color(1.0, 0.5, 0.5)
+    Render.line(0.1, 0.15, 0.1, 0.9, 0.15, 0.1, 1)
+    Render.color(0.5, 1.0, 0.5)
+    Render.square(0.875, 0.125, 0.2, 0.05)
+  }
+}
