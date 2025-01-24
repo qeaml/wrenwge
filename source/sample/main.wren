@@ -1,4 +1,4 @@
-import "engine" for State, Console, Render, Bundle, Texture
+import "engine" for State, Console, Render, Bundle, Texture, KeyBind
 import "atlas" for TextureAtlas
 
 class InitState is State {
@@ -13,6 +13,19 @@ class InitState is State {
     _tilesTexture = Texture.new()
     _bundle.nqTexture("tiles.png", _tilesTexture)
     _tiles = TextureAtlas.new(_tilesTexture, [16, 16])
+
+    _red = false
+    _redBind = KeyBind.new("test.red", "r") {
+      Console.print("Red key pressed.")
+      _red = true
+    }
+    _redBind.onRelease {
+      Console.print("Red key released.")
+      _red = false
+    }
+    _exitBind = KeyBind.new("test.exit", "escape") {
+      return false
+    }
   }
 
   tick(delta) {
@@ -24,10 +37,12 @@ class InitState is State {
   }
 
   render() {
-    Render.clear([0.0, 0.0, 0.0])
-    Render.color()
-    Render.text([0.1, 0.1, 0.1], "Hello, world of Wren!", 0.05)
-    Render.text([0.1, 0.151, 0.1], "You launched the game %(_timer) seconds ago.", 0.025)
+    if(_red) {
+      Render.clear([1.0, 0.0, 0.0])
+    } else {
+      Render.clear([0.0, 0.0, 0.0])
+    }
+
     Render.color([1.0, 0.5, 0.5])
     Render.line([0.1, 0.15, 0.1], [0.9, 0.15, 0.1], 1)
     Render.color([0.5, 1.0, 0.5])
@@ -37,5 +52,11 @@ class InitState is State {
     Render.rect([0.25, 0.75, 0.5], [0.5, 0.1], _texture)
 
     Render.rect([0.5, 0.9, 0.1], [0.2, 0.1], _tilesTexture, _tiles.texCoord([0, 14], [4, 2]))
+
+    Render.color()
+    Render.text([0.1, 0.1, 0.1], "Hello, world of Wren!", 0.05)
+    Render.text([0.1, 0.151, 0.1], "You launched the game %(_timer) seconds ago.", 0.025)
+    Render.text([0.1, 0.176, 0.1], "Press %(_redBind.key()) to change the background color.", 0.025)
+    Render.text([0.1, 0.202, 0.1], "Press %(_exitBind.key()) to exit the game.", 0.025)
   }
 }

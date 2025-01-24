@@ -21,6 +21,13 @@ class SubState {
   render() {}
 }
 
+// from <nwge/bind.hpp>
+foreign class KeyBind {
+  construct new(name, key, callback) {}
+  foreign key()
+  foreign onRelease(callback)
+}
+
 // from <nwge/console.hpp>
 class Console {
   foreign static clear()

@@ -22,6 +22,7 @@ WrenForeignMethodFn bindForeignMethod(
 
 WrenForeignMethodFn bindEngineMethod(const char *className, bool isStatic, const char *signature)
 {
+  BIND_METHOD(KeyBind)
   BIND_METHOD(Console)
   BIND_METHOD(Render)
   BIND_METHOD(Bundle)
@@ -45,6 +46,7 @@ WrenForeignClassMethods bindForeignClass(
 
 WrenForeignClassMethods bindEngineClass(const char *className)
 {
+  BIND_CLASS(KeyBind)
   BIND_CLASS(Bundle)
   BIND_CLASS(Texture)
   return {nullptr, nullptr};
