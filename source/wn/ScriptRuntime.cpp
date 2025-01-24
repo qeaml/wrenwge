@@ -153,11 +153,15 @@ bool ScriptRuntime::init(const char *initialState)
   return true;
 }
 
-bool ScriptRuntime::on(nwge::Event &evt)
+bool ScriptRuntime::on(nwge::Event &evt, WrenHandle *state)
 {
-  /* ignore all events if we haven't initialized yed */
-  if(mCurrStateHandle == nullptr || mNextStateHandle != nullptr) {
-    return true;
+  /* used for SubStates, use main state if nullptr */
+  if(state == nullptr) {
+    state = mCurrStateHandle;
+    /* ignore all events if we haven't initialized yed */
+    if(mCurrStateHandle == nullptr || mNextStateHandle != nullptr) {
+      return true;
+    }
   }
 
   switch(evt.type) {
@@ -166,16 +170,16 @@ bool ScriptRuntime::on(nwge::Event &evt)
     return true;
 
   case Event::MouseMotion:
-    return fwdMouseMotion(evt.motion);
+    return fwdMouseMotion(state, evt.motion);
 
   case Event::MouseDown:
-    return fwdMouseClick(true, evt.click);
+    return fwdMouseClick(state, true, evt.click);
 
   case Event::MouseUp:
-    return fwdMouseClick(false, evt.click);
+    return fwdMouseClick(state, false, evt.click);
 
   case Event::MouseScroll:
-    return fwdMouseScroll(evt.scroll);
+    return fwdMouseScroll(state, evt.scroll);
 
   case Event::PostLoad:
   case Event::Max:
@@ -183,7 +187,7 @@ bool ScriptRuntime::on(nwge::Event &evt)
   }
 }
 
-bool ScriptRuntime::fwdMouseMotion(const MouseMotion &motion)
+bool ScriptRuntime::fwdMouseMotion(WrenHandle *state, const MouseMotion &motion)
 {
   /*
   0 -> Event class
@@ -222,10 +226,10 @@ bool ScriptRuntime::fwdMouseMotion(const MouseMotion &motion)
   wrenCall(mVM, call);
   wrenReleaseHandle(mVM, call);
 
-  return fwdEvent(wrenGetSlotHandle(mVM, 0));
+  return fwdEvent(state, wrenGetSlotHandle(mVM, 0));
 }
 
-bool ScriptRuntime::fwdMouseClick(bool down, const MouseClick &click)
+bool ScriptRuntime::fwdMouseClick(WrenHandle *state, bool down, const MouseClick &click)
 {
   /*
   0 -> Event class
@@ -257,10 +261,10 @@ bool ScriptRuntime::fwdMouseClick(bool down, const MouseClick &click)
   wrenCall(mVM, call);
   wrenReleaseHandle(mVM, call);
 
-  return fwdEvent(wrenGetSlotHandle(mVM, 0));
+  return fwdEvent(state, wrenGetSlotHandle(mVM, 0));
 }
 
-bool ScriptRuntime::fwdMouseScroll(s32 amt)
+bool ScriptRuntime::fwdMouseScroll(WrenHandle *state, s32 amt)
 {
   /*
   0 -> Event class
@@ -274,13 +278,13 @@ bool ScriptRuntime::fwdMouseScroll(s32 amt)
   wrenCall(mVM, call);
   wrenReleaseHandle(mVM, call);
 
-  return fwdEvent(wrenGetSlotHandle(mVM, 0));
+  return fwdEvent(state, wrenGetSlotHandle(mVM, 0));
 }
 
-bool ScriptRuntime::fwdEvent(WrenHandle *event)
+bool ScriptRuntime::fwdEvent(WrenHandle *state, WrenHandle *event)
 {
   wrenEnsureSlots(mVM, 2);
-  wrenSetSlotHandle(mVM, 0, mCurrStateHandle);
+  wrenSetSlotHandle(mVM, 0, state);
   wrenSetSlotHandle(mVM, 1, event);
   auto *call = wrenMakeCallHandle(mVM, "on(_)");
   wrenCall(mVM, call);

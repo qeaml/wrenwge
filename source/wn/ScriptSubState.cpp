@@ -16,6 +16,11 @@ public:
     wrenCollectGarbage(mRuntime.vm());
   }
 
+  bool on(Event &evt) override
+  {
+    return mRuntime.on(evt, mSubStateHandle);
+  }
+
   bool tick(f32 delta) override
   {
     wrenEnsureSlots(mRuntime.vm(), 2);

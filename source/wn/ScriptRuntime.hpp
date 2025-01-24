@@ -16,7 +16,7 @@ public:
 
   void preload();
   bool init(const char *initialState);
-  bool on(nwge::Event &evt);
+  bool on(nwge::Event &evt, WrenHandle *state);
   bool tick(f32 delta);
   void render() const;
 
@@ -34,10 +34,10 @@ private:
 
   WrenHandle *mEventClass = nullptr;
 
-  bool fwdMouseMotion(const nwge::MouseMotion &motion);
-  bool fwdMouseClick(bool down, const nwge::MouseClick &click);
-  bool fwdMouseScroll(s32 amt);
-  bool fwdEvent(WrenHandle *event);
+  bool fwdMouseMotion(WrenHandle *state, const nwge::MouseMotion &motion);
+  bool fwdMouseClick(WrenHandle *state, bool down, const nwge::MouseClick &click);
+  bool fwdMouseScroll(WrenHandle *state, s32 amt);
+  bool fwdEvent(WrenHandle *state, WrenHandle *event);
 };
 
 // gets ScriptRuntime if a valid one exists

@@ -1,9 +1,15 @@
-import "engine" for SubState, Render, KeyBind
+import "engine" for SubState, Render, KeyBind, Console
 
 class GreenSubState is SubState {
   construct new() {
     _leaveBind = KeyBind.new("test.leave", "q") {
       SubState.pop()
+    }
+  }
+
+  on(evt) {
+    if(evt.isMouseUp) {
+      Console.print("You have clicked in the Green Sub-State.")
     }
   }
 

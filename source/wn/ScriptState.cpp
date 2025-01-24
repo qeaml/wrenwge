@@ -22,7 +22,7 @@ public:
   }
 
   bool on(Event &evt) override {
-    return mRuntime.on(evt);
+    return mRuntime.on(evt, nullptr);
   }
 
   bool tick(f32 delta) override {
