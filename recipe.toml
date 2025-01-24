@@ -23,7 +23,12 @@ src = [ "wn", "wren/vm" ]
 lang = "cpp"
 dyn-libs = [ "nwge", "nwge_bndl", "nwge_cli", "SDL2" ]
 
-[sample_game]
+[test-src]
 plug = "plugins/nwge/bundle"
-src = "source/sample"
-out = "target/sample.bndl"
+src = "test/source"
+out = "target/test.bndl"
+
+[test-assets]
+plug = "plugins/nwge/bundle"
+src = "test/assets"
+out = "target/test-assets.bndl"

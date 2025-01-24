@@ -3,7 +3,7 @@ import "green" for GreenSubState
 
 class BlueState is State {
   construct new() {
-    _bundle = Bundle.new("sample")
+    _bundle = Bundle.new("test-assets")
 
     _audioBuffer = AudioBuffer.new()
     _audioSource = AudioSource.new()

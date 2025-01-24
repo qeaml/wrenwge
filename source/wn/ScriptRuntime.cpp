@@ -1,8 +1,10 @@
 #include "ScriptRuntime.hpp"
 #include "engine.wren.hpp"
 #include "engineIface.hpp"
+#include "version.h"
 #include <cstring>
 #include <nwge/console.hpp>
+#include <nwge/common/version.h>
 #include <nwge/data/bundle.hpp>
 #include <nwge/dialog.hpp>
 
@@ -129,6 +131,10 @@ void ScriptRuntime::preload()
 bool ScriptRuntime::init(const char *initialState)
 {
   gScriptRuntime = this;
+
+  auto nwgeVer = nwgeVersion();
+  console::print("WreNwge v" WN_VER_STR ": Wren v" WREN_VERSION_STRING " + Nwge v{}.{}",
+    nwgeVer.major, nwgeVer.minor);
 
   auto res = wrenInterpret(mVM, "preload", "import \"main\"");
   if(res != WREN_RESULT_SUCCESS) {

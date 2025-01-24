@@ -7,7 +7,7 @@ class InitState is State {
     _timer = 0.0
     _announced = false
 
-    _bundle = Bundle.new("sample")
+    _bundle = Bundle.new("test-assets")
     _texture = Texture.new()
     _bundle.nqTexture("fen.jpg", _texture)
 

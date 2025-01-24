@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Debug",
       "program": "${workspaceFolder}/target/debug/wn",
-      "args": ["sample"],
+      "args": ["test"],
       "cwd": "${workspaceFolder}/target"
     }
   ]
