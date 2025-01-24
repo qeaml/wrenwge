@@ -80,8 +80,8 @@ static void *reallocate(void *memory, size_t newSize, void *userData)
   return nwgeRealloc(memory, newSize);
 }
 
-ScriptRuntime::ScriptRuntime(const StringView &bundle)
-  : mBundleFileName(bundle)
+ScriptRuntime::ScriptRuntime(StringView bundle)
+  : mBundleFileName(std::move(bundle))
 {
   WrenConfiguration config;
   wrenInitConfiguration(&config);
@@ -185,6 +185,7 @@ bool ScriptRuntime::swapToNextState()
   if(prevStateHandle != nullptr) {
     wrenReleaseHandle(mVM, prevStateHandle);
   }
+  wrenCollectGarbage(mVM);
   return true;
 }
 

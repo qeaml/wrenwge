@@ -3,7 +3,7 @@
 
 class ScriptRuntime {
 public:
-  ScriptRuntime(const nwge::StringView &bundle);
+  ScriptRuntime(nwge::StringView bundle);
   ScriptRuntime(ScriptRuntime &&other) noexcept;
   ~ScriptRuntime();
 

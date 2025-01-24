@@ -13,6 +13,7 @@ public:
   ~ScriptSubState()
   {
     wrenReleaseHandle(mRuntime.vm(), mSubStateHandle);
+    wrenCollectGarbage(mRuntime.vm());
   }
 
   bool tick(f32 delta) override

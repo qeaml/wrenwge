@@ -1,4 +1,5 @@
 #include "../engineIface.hpp"
+#include <nwge/console.hpp>
 
 using namespace nwge;
 
@@ -63,15 +64,19 @@ static void keyBindAllocate(WrenVM *vm)
     .vm=vm,
     .pressCb=callback
   };
+  auto &bind = reinterpret_cast<KeyBindWrapper*>(wrapper)->bind;
+  console::print("Allocated KeyBind {:08X}", bind.id);
 }
 
 static void keyBindFinalize(void *data)
 {
-  auto *bind = reinterpret_cast<KeyBindWrapper*>(data);
-  wrenReleaseHandle(bind->vm, bind->pressCb);
-  if(bind->releaseCb != nullptr) {
-    wrenReleaseHandle(bind->vm, bind->releaseCb);
+  auto *wrapper = reinterpret_cast<KeyBindWrapper*>(data);
+  wrenReleaseHandle(wrapper->vm, wrapper->pressCb);
+  if(wrapper->releaseCb != nullptr) {
+    wrenReleaseHandle(wrapper->vm, wrapper->releaseCb);
   }
+  console::print("Finalized KeyBind {:08X}", wrapper->bind.id);
+  wrapper->~KeyBindWrapper();
 }
 
 WrenForeignClassMethods bindKeyBindClass()
