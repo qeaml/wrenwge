@@ -5,10 +5,12 @@
 #include <nwge/json/parse.hpp>
 #include <nwge/json/Schema.hpp>
 #include "ScriptState.hpp"
+#include "config.hpp"
 
 using namespace nwge;
 
-s32 main(s32 argc, CStr *argv) {
+s32 main(s32 argc, CStr *argv)
+{
   cli::parse(argc, argv);
 
   if(cli::posC() < 1) {
@@ -53,28 +55,15 @@ s32 main(s32 argc, CStr *argv) {
     return 1;
   }
 
-  auto root = json::Schema::object(*res.value);
-  if(!root.present()) {
-    dialog::error("Engine Error"_sv, "game.json is not an object"_sv);
-    return 1;
-  }
-
-  auto name = root->expectStringField("name"_sv);
-  if(!name.present()) {
-    dialog::error("Engine Error"_sv, "game.json is missing name field"_sv);
-    return 1;
-  }
-
-  auto initialStateName = root->expectStringField("initialState"_sv);
-  if(!initialStateName.present()) {
-    dialog::error("Engine Error"_sv, "game.json is missing initialState field"_sv);
+  auto config = parseConfig(*res);
+  if(!config.present()) {
     return 1;
   }
 
   ScriptRuntime scriptRuntime{fileName};
-  startPtr(createScriptState(std::move(scriptRuntime), initialStateName->data()), {
-    .loadBlocking = config::LoadBlocking::Always,
-    .appName = *name,
-  });
+  startPtr(
+    createScriptState(std::move(scriptRuntime), config->initialState.data()),
+    std::move(config->engineConfig)
+  );
   return 0;
 }
