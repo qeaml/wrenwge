@@ -6,4 +6,3 @@
     implies the KeyBind never gets finalized. The fact pressing it doesn't crash
     further proves the `InitState` object still exists even after we switch to a
     different state.
-* Add options to `SubState.push()` and `SubState.swap()` (using maps)
