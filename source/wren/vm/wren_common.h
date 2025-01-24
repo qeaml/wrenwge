@@ -154,8 +154,8 @@
 // Assertions add significant overhead, so are only enabled in debug builds.
 #ifdef DEBUG
 
+  #if NO_NWGE_ASSERT
   #include <stdio.h>
-
   #define ASSERT(condition, message)                                           \
       do                                                                       \
       {                                                                        \
@@ -181,6 +181,11 @@
             __FILE__, __LINE__, __func__);                                     \
         abort();                                                               \
       } while (false)
+  #else
+    #include <nwge/common/err.h>
+    #define ASSERT NWGE_ASSERT
+    #define UNREACHABLE() nwgeUnreachable("Wren unreachable code", __FILE__, __LINE__, NWGE_FUNC_NAME)
+  #endif
 
 #else
 

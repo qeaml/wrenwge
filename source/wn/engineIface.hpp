@@ -14,6 +14,7 @@ WrenForeignMethodFn bindForeignMethod(
 
 WrenForeignMethodFn bindEngineMethod(const char *className, bool isStatic, const char *signature);
 WrenForeignMethodFn bindStateMethod(bool isStatic, const char *signature);
+WrenForeignMethodFn bindSubStateMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindKeyBindMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindConsoleMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindBundleMethod(bool isStatic, const char *signature);

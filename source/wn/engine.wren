@@ -1,9 +1,6 @@
 // Base class for a state.
 class State {
-  construct new() {
-    assert(false, "Do not instantiate State directly.")
-  }
-
+  construct new() {}
   init() {}
   on(evt) {}
   tick(delta) {}
@@ -14,13 +11,15 @@ class State {
 
 // Base class for a sub-state.
 class SubState {
-  construct new() {
-    assert(false, "Do not instantiate SubState directly.")
-  }
-
+  construct new() {}
   on(evt) {}
-  tick() {}
+  tick(delta) {}
   render() {}
+
+  foreign static push(subState)
+  foreign static swap(subState)
+  foreign static pop()
+  foreign static clear()
 }
 
 // from <nwge/bind.hpp>

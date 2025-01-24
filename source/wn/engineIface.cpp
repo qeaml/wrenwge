@@ -23,6 +23,7 @@ WrenForeignMethodFn bindForeignMethod(
 WrenForeignMethodFn bindEngineMethod(const char *className, bool isStatic, const char *signature)
 {
   BIND_METHOD(State)
+  BIND_METHOD(SubState)
   BIND_METHOD(KeyBind)
   BIND_METHOD(Console)
   BIND_METHOD(Render)
