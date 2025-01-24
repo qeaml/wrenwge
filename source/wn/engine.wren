@@ -8,6 +8,8 @@ class State {
   on(evt) {}
   tick(delta) {}
   render() {}
+
+  foreign static swap(state)
 }
 
 // Base class for a sub-state.

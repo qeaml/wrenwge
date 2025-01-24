@@ -1,5 +1,6 @@
 import "engine" for State, Console, Render, Bundle, Texture, KeyBind
 import "atlas" for TextureAtlas
+import "blue" for BlueState
 
 class InitState is State {
   construct new() {
@@ -22,6 +23,9 @@ class InitState is State {
     _redBind.onRelease {
       Console.print("Red key released.")
       _red = false
+    }
+    _blueBind = KeyBind.new("test.blue", "b") {
+      State.swap(BlueState.new())
     }
     _exitBind = KeyBind.new("test.exit", "escape") {
       return false
@@ -57,6 +61,7 @@ class InitState is State {
     Render.text([0.1, 0.1, 0.1], "Hello, world of Wren!", 0.05)
     Render.text([0.1, 0.151, 0.1], "You launched the game %(_timer) seconds ago.", 0.025)
     Render.text([0.1, 0.176, 0.1], "Press %(_redBind.key()) to change the background color.", 0.025)
-    Render.text([0.1, 0.202, 0.1], "Press %(_exitBind.key()) to exit the game.", 0.025)
+    Render.text([0.1, 0.202, 0.1], "Press %(_blueBind.key()) to enter the blue state.", 0.025)
+    Render.text([0.1, 0.227, 0.1], "Press %(_exitBind.key()) to exit the game.", 0.025)
   }
 }

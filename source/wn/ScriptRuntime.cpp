@@ -1,14 +1,19 @@
 #include "ScriptRuntime.hpp"
-#include "wren.hpp"
 #include "engine.wren.hpp"
 #include "engineIface.hpp"
 #include <cstring>
 #include <nwge/console.hpp>
 #include <nwge/data/bundle.hpp>
+#include <nwge/dialog.hpp>
 
 using namespace nwge;
 
-static data::Bundle *gBundlePtr;
+static ScriptRuntime *gScriptRuntime;
+
+ScriptRuntime *getScriptRuntime()
+{
+  return gScriptRuntime;
+}
 
 static WrenLoadModuleResult loadModule(WrenVM *vm, const char *name)
 {
@@ -23,7 +28,7 @@ static WrenLoadModuleResult loadModule(WrenVM *vm, const char *name)
   }
 
   ScratchString fileName = ScratchString::formatted("{}.wren", name);
-  auto file = gBundlePtr->find(fileName);
+  auto file = gScriptRuntime->bundle().find(fileName);
   if(!file) {
     return result;
   }
@@ -76,10 +81,8 @@ static void *reallocate(void *memory, size_t newSize, void *userData)
 }
 
 ScriptRuntime::ScriptRuntime(const StringView &bundle)
+  : mBundleFileName(bundle)
 {
-  mBundle.load({bundle});
-  gBundlePtr = &mBundle;
-
   WrenConfiguration config;
   wrenInitConfiguration(&config);
   config.loadModuleFn = &loadModule;
@@ -94,6 +97,7 @@ ScriptRuntime::ScriptRuntime(const StringView &bundle)
 
 ScriptRuntime::ScriptRuntime(ScriptRuntime &&other) noexcept
   : mBundle(std::move(other.mBundle)),
+    mBundleFileName(std::move(other.mBundleFileName)),
     mVM(other.mVM)
 {
   other.mVM = nullptr;
@@ -102,7 +106,98 @@ ScriptRuntime::ScriptRuntime(ScriptRuntime &&other) noexcept
 ScriptRuntime::~ScriptRuntime()
 {
   if(mVM != nullptr) {
+    if(mCurrStateHandle != nullptr) {
+      wrenReleaseHandle(mVM, mCurrStateHandle);
+    }
+    if(mNextStateHandle != nullptr) {
+      wrenReleaseHandle(mVM, mNextStateHandle);
+    }
     wrenFreeVM(mVM);
     mVM = nullptr;
   }
+  gScriptRuntime = nullptr;
+}
+
+void ScriptRuntime::preload()
+{
+  mBundle.load({mBundleFileName});
+}
+
+bool ScriptRuntime::init(const char *initialState)
+{
+  gScriptRuntime = this;
+
+  auto res = wrenInterpret(mVM, "preload", "import \"main\"");
+  if(res != WREN_RESULT_SUCCESS) {
+    dialog::error("Script Error", "A script error has occurred.");
+    return false;
+  }
+
+  wrenEnsureSlots(mVM, 1);
+  wrenGetVariable(mVM, "main", initialState, 0);
+  auto *newMethod = wrenMakeCallHandle(mVM, "new()");
+  res = wrenCall(mVM, newMethod);
+  wrenReleaseHandle(mVM, newMethod);
+  if(res != WREN_RESULT_SUCCESS) {
+    dialog::error("Script Error", "A script error has occurred.");
+    return false;
+  }
+
+  mNextStateHandle = wrenGetSlotHandle(mVM, 0);
+  return true;
+}
+
+bool ScriptRuntime::tick(f32 delta)
+{
+  if(mNextStateHandle != nullptr) {
+    return swapToNextState();
+  }
+
+  wrenEnsureSlots(mVM, 2);
+  wrenSetSlotHandle(mVM, 0, mCurrStateHandle);
+  auto *tickMethod = wrenMakeCallHandle(mVM, "tick(_)");
+  wrenSetSlotDouble(mVM, 1, delta);
+  auto res = wrenCall(mVM, tickMethod);
+  wrenReleaseHandle(mVM, tickMethod);
+  if(res != WREN_RESULT_SUCCESS) {
+    dialog::error("Script Error", "A script error has occurred.");
+    return false;
+  }
+
+  return true;
+}
+
+bool ScriptRuntime::swapToNextState()
+{
+  wrenEnsureSlots(mVM, 2);
+  wrenSetSlotHandle(mVM, 0, mNextStateHandle);
+  auto *initMethod = wrenMakeCallHandle(mVM, "init()");
+  auto res = wrenCall(mVM, initMethod);
+  wrenReleaseHandle(mVM, initMethod);
+  if(res != WREN_RESULT_SUCCESS) {
+    dialog::error("Script Error", "A script error has occurred.");
+    return false;
+  }
+
+  auto *prevStateHandle = mCurrStateHandle;
+  mCurrStateHandle = mNextStateHandle;
+  mNextStateHandle = nullptr;
+  if(prevStateHandle != nullptr) {
+    wrenReleaseHandle(mVM, prevStateHandle);
+  }
+  return true;
+}
+
+void ScriptRuntime::render() const
+{
+  wrenEnsureSlots(mVM, 1);
+  wrenSetSlotHandle(mVM, 0, mCurrStateHandle);
+  auto *renderMethod = wrenMakeCallHandle(mVM, "render()");
+  wrenCall(mVM, renderMethod);
+  wrenReleaseHandle(mVM, renderMethod);
+}
+
+void ScriptRuntime::swapState(WrenHandle *nextStateHandle)
+{
+  mNextStateHandle = nextStateHandle;
 }
