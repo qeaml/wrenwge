@@ -22,14 +22,22 @@ public:
     wrenEnsureSlots(mRuntime.vm(), 1);
     wrenGetVariable(mRuntime.vm(), "main", mInitialState, 0);
     auto *newMethod = wrenMakeCallHandle(mRuntime.vm(), "new()");
-    wrenCall(mRuntime.vm(), newMethod);
+    res = wrenCall(mRuntime.vm(), newMethod);
     wrenReleaseHandle(mRuntime.vm(), newMethod);
+    if(res != WREN_RESULT_SUCCESS) {
+      dialog::error("Script Error", "A script error has occurred.");
+      return false;
+    }
 
     mStateHandle = wrenGetSlotHandle(mRuntime.vm(), 0);
     wrenEnsureSlots(mRuntime.vm(), 2);
     auto *initMethod = wrenMakeCallHandle(mRuntime.vm(), "init()");
-    wrenCall(mRuntime.vm(), initMethod);
+    res = wrenCall(mRuntime.vm(), initMethod);
     wrenReleaseHandle(mRuntime.vm(), initMethod);
+    if(res != WREN_RESULT_SUCCESS) {
+      dialog::error("Script Error", "A script error has occurred.");
+      return false;
+    }
 
     return true;
   }
@@ -39,8 +47,12 @@ public:
     wrenSetSlotHandle(mRuntime.vm(), 0, mStateHandle);
     auto *tickMethod = wrenMakeCallHandle(mRuntime.vm(), "tick(_)");
     wrenSetSlotDouble(mRuntime.vm(), 1, delta);
-    wrenCall(mRuntime.vm(), tickMethod);
+    auto res = wrenCall(mRuntime.vm(), tickMethod);
     wrenReleaseHandle(mRuntime.vm(), tickMethod);
+    if(res != WREN_RESULT_SUCCESS) {
+      dialog::error("Script Error", "A script error has occurred.");
+      return false;
+    }
 
     return true;
   }
