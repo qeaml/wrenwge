@@ -16,8 +16,14 @@ class SubState {
   tick(delta) {}
   render() {}
 
-  foreign static push(subState)
-  foreign static swap(subState)
+  foreign static push(subState, options)
+  static push(subState) {
+    push(subState, {})
+  }
+  foreign static swap(subState, options)
+  static swap(subState) {
+    swap(subState, {})
+  }
   foreign static pop()
   foreign static clear()
 }

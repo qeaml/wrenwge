@@ -1,5 +1,6 @@
 import "engine" for State, SubState, Render, KeyBind, Bundle, AudioSource, AudioBuffer
 import "green" for GreenSubState
+import "red" for HalfRedSubState
 
 class BlueState is State {
   construct new() {
@@ -13,6 +14,9 @@ class BlueState is State {
     _greenBind = KeyBind.new("test.green", "g") {
       SubState.push(GreenSubState.new())
     }
+    _purpleBind = KeyBind.new("test.purple", "p") {
+      SubState.push(HalfRedSubState.new(), {"renderParent": true})
+    }
     _playBind = KeyBind.new("test.play", "space") {
       _audioSource.play()
     }
@@ -23,6 +27,7 @@ class BlueState is State {
     Render.color()
     Render.text([0.1, 0.1, 0.1], "Welcome to the blue state.", 0.05)
     Render.text([0.1, 0.15, 0.1], "Press %(_greenBind.key()) to become green.", 0.025)
-    Render.text([0.1, 0.175, 0.1], "Press %(_playBind.key()) to play a sound.", 0.025)
+    Render.text([0.1, 0.175, 0.1], "Press %(_purpleBind.key()) to become purple.", 0.025)
+    Render.text([0.1, 0.2, 0.1], "Press %(_playBind.key()) to play a sound.", 0.025)
   }
 }

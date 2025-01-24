@@ -40,5 +40,7 @@ private:
   bool fwdEvent(WrenHandle *state, WrenHandle *event);
 };
 
+void initScriptRuntime(nwge::StringView bundle);
 // gets ScriptRuntime if a valid one exists
 ScriptRuntime *getScriptRuntime();
+void deleteScriptRuntime();

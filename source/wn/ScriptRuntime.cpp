@@ -7,14 +7,26 @@
 #include <nwge/common/version.h>
 #include <nwge/data/bundle.hpp>
 #include <nwge/dialog.hpp>
+#include <nwge/state.hpp>
 
 using namespace nwge;
 
 static ScriptRuntime *gScriptRuntime;
 
+void initScriptRuntime(StringView bundle)
+{
+  gScriptRuntime = new ScriptRuntime(std::move(bundle));
+}
+
 ScriptRuntime *getScriptRuntime()
 {
   return gScriptRuntime;
+}
+
+void deleteScriptRuntime()
+{
+  delete gScriptRuntime;
+  gScriptRuntime = nullptr;
 }
 
 static WrenLoadModuleResult loadModule(WrenVM *vm, const char *name)
@@ -108,6 +120,7 @@ ScriptRuntime::ScriptRuntime(ScriptRuntime &&other) noexcept
 ScriptRuntime::~ScriptRuntime()
 {
   if(mVM != nullptr) {
+    clearSubStates();
     if(mCurrStateHandle != nullptr) {
       wrenReleaseHandle(mVM, mCurrStateHandle);
     }

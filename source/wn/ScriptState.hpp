@@ -3,4 +3,4 @@
 #include "ScriptRuntime.hpp"
 #include <nwge/state.hpp>
 
-nwge::State *createScriptState(ScriptRuntime &&runtime, const char *initialState);
+nwge::State *createScriptState(const char *initialState);

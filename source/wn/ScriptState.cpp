@@ -6,9 +6,9 @@ using namespace nwge;
 
 class ScriptState: public State {
 public:
-  ScriptState(ScriptRuntime &&runtime, const char *initialState)
+  ScriptState(const char *initialState)
     : State("ScriptState"_sv),
-      mRuntime(std::move(runtime)),
+      mRuntime(*getScriptRuntime()),
       mInitialState(initialState)
   {}
 
@@ -34,10 +34,10 @@ public:
   }
 
 private:
-  ScriptRuntime mRuntime;
+  ScriptRuntime &mRuntime;
   const char *mInitialState;
 };
 
-State *createScriptState(ScriptRuntime &&runtime, const char *initialState) {
-  return new ScriptState(std::move(runtime), initialState);
+State *createScriptState(const char *initialState) {
+  return new ScriptState(initialState);
 }
