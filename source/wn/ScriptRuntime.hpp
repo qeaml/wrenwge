@@ -1,5 +1,6 @@
 #include "wren.hpp"
 #include <nwge/data/bundle.hpp>
+#include <nwge/event.hpp>
 
 class ScriptRuntime {
 public:
@@ -15,6 +16,7 @@ public:
 
   void preload();
   bool init(const char *initialState);
+  bool on(nwge::Event &evt);
   bool tick(f32 delta);
   void render() const;
 
@@ -29,6 +31,13 @@ private:
   WrenHandle *mNextStateHandle = nullptr;
 
   bool swapToNextState();
+
+  WrenHandle *mEventClass = nullptr;
+
+  bool fwdMouseMotion(const nwge::MouseMotion &motion);
+  bool fwdMouseClick(bool down, const nwge::MouseClick &click);
+  bool fwdMouseScroll(s32 amt);
+  bool fwdEvent(WrenHandle *event);
 };
 
 // gets ScriptRuntime if a valid one exists

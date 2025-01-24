@@ -112,6 +112,9 @@ ScriptRuntime::~ScriptRuntime()
     if(mNextStateHandle != nullptr) {
       wrenReleaseHandle(mVM, mNextStateHandle);
     }
+    if(mEventClass != nullptr) {
+      wrenReleaseHandle(mVM, mEventClass);
+    }
     wrenFreeVM(mVM);
     mVM = nullptr;
   }
@@ -134,6 +137,9 @@ bool ScriptRuntime::init(const char *initialState)
   }
 
   wrenEnsureSlots(mVM, 1);
+  wrenGetVariable(mVM, "engine", "Event", 0);
+  mEventClass = wrenGetSlotHandle(mVM, 0);
+
   wrenGetVariable(mVM, "main", initialState, 0);
   auto *newMethod = wrenMakeCallHandle(mVM, "new()");
   res = wrenCall(mVM, newMethod);
@@ -144,6 +150,145 @@ bool ScriptRuntime::init(const char *initialState)
   }
 
   mNextStateHandle = wrenGetSlotHandle(mVM, 0);
+  return true;
+}
+
+bool ScriptRuntime::on(nwge::Event &evt)
+{
+  /* ignore all events if we haven't initialized yed */
+  if(mCurrStateHandle == nullptr || mNextStateHandle != nullptr) {
+    return true;
+  }
+
+  switch(evt.type) {
+  case Event::KeyDown:
+  case Event::KeyUp:
+    return true;
+
+  case Event::MouseMotion:
+    return fwdMouseMotion(evt.motion);
+
+  case Event::MouseDown:
+    return fwdMouseClick(true, evt.click);
+
+  case Event::MouseUp:
+    return fwdMouseClick(false, evt.click);
+
+  case Event::MouseScroll:
+    return fwdMouseScroll(evt.scroll);
+
+  case Event::PostLoad:
+  case Event::Max:
+    return true;
+  }
+}
+
+bool ScriptRuntime::fwdMouseMotion(const MouseMotion &motion)
+{
+  /*
+  0 -> Event class
+  1 -> from list
+  2 -> to list
+  3 -> delta list
+  4 -> temporary
+  = 5
+  */
+  wrenEnsureSlots(mVM, 5);
+  wrenSetSlotHandle(mVM, 0, mEventClass);
+
+  /* from list */
+  wrenSetSlotNewList(mVM, 1);
+  wrenSetSlotDouble(mVM, 4, motion.from.x);
+  wrenInsertInList(mVM, 1, -1, 4);
+  wrenSetSlotDouble(mVM, 4, motion.from.y);
+  wrenInsertInList(mVM, 1, -1, 4);
+
+  /* to list */
+  wrenSetSlotNewList(mVM, 2);
+  wrenSetSlotDouble(mVM, 4, motion.to.x);
+  wrenInsertInList(mVM, 2, -1, 4);
+  wrenSetSlotDouble(mVM, 4, motion.to.y);
+  wrenInsertInList(mVM, 2, -1, 4);
+
+  /* delta list */
+  wrenSetSlotNewList(mVM, 3);
+  wrenSetSlotDouble(mVM, 4, motion.delta.x);
+  wrenInsertInList(mVM, 3, -1, 4);
+  wrenSetSlotDouble(mVM, 4, motion.delta.y);
+  wrenInsertInList(mVM, 3, -1, 4);
+
+  /* mouseMotion(from,to,delta) constructor */
+  auto *call = wrenMakeCallHandle(mVM, "mouseMotion(_,_,_)");
+  wrenCall(mVM, call);
+  wrenReleaseHandle(mVM, call);
+
+  return fwdEvent(wrenGetSlotHandle(mVM, 0));
+}
+
+bool ScriptRuntime::fwdMouseClick(bool down, const MouseClick &click)
+{
+  /*
+  0 -> Event class
+  1 -> pos list
+  2 -> button
+  3 -> temporary
+  = 4
+  */
+  wrenEnsureSlots(mVM, 4);
+  wrenSetSlotHandle(mVM, 0, mEventClass);
+
+  /* pos list */
+  wrenSetSlotNewList(mVM, 1);
+  wrenSetSlotDouble(mVM, 3, click.pos.x);
+  wrenInsertInList(mVM, 1, -1, 3);
+  wrenSetSlotDouble(mVM, 3, click.pos.y);
+  wrenInsertInList(mVM, 1, -1, 3);
+
+  /* button */
+  wrenSetSlotDouble(mVM, 2, static_cast<f64>(click.button));
+
+  /* mouseDown or mouseUp constructor */
+  WrenHandle *call;
+  if(down) {
+    call = wrenMakeCallHandle(mVM, "mouseDown(_,_)");
+  } else {
+    call = wrenMakeCallHandle(mVM, "mouseUp(_,_)");
+  }
+  wrenCall(mVM, call);
+  wrenReleaseHandle(mVM, call);
+
+  return fwdEvent(wrenGetSlotHandle(mVM, 0));
+}
+
+bool ScriptRuntime::fwdMouseScroll(s32 amt)
+{
+  /*
+  0 -> Event class
+  1 -> amount
+  = 2
+  */
+  wrenEnsureSlots(mVM, 2);
+  wrenSetSlotHandle(mVM, 0, mEventClass);
+  wrenSetSlotDouble(mVM, 1, amt);
+  WrenHandle *call = wrenMakeCallHandle(mVM, "mouseScroll(_)");
+  wrenCall(mVM, call);
+  wrenReleaseHandle(mVM, call);
+
+  return fwdEvent(wrenGetSlotHandle(mVM, 0));
+}
+
+bool ScriptRuntime::fwdEvent(WrenHandle *event)
+{
+  wrenEnsureSlots(mVM, 2);
+  wrenSetSlotHandle(mVM, 0, mCurrStateHandle);
+  wrenSetSlotHandle(mVM, 1, event);
+  auto *call = wrenMakeCallHandle(mVM, "on(_)");
+  wrenCall(mVM, call);
+  wrenReleaseHandle(mVM, call);
+  wrenReleaseHandle(mVM, event);
+  if(wrenGetSlotType(mVM, 0) == WREN_TYPE_BOOL) {
+    return wrenGetSlotBool(mVM, 0);
+  }
   return true;
 }
 

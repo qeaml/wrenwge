@@ -21,6 +21,10 @@ public:
     return mRuntime.init(mInitialState);
   }
 
+  bool on(Event &evt) override {
+    return mRuntime.on(evt);
+  }
+
   bool tick(f32 delta) override {
     return mRuntime.tick(delta);
   }

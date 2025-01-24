@@ -32,6 +32,15 @@ class InitState is State {
     }
   }
 
+  on(evt) {
+    if(evt.isMouseDown) {
+      Console.print("Mouse pressed at %(evt.clickPos)")
+    }
+    if(evt.isMouseUp) {
+      Console.print("Mouse released as %(evt.clickPos)")
+    }
+  }
+
   tick(delta) {
     _timer = _timer + delta
     if(_timer >= 3.0 && !_announced) {

@@ -22,6 +22,45 @@ class SubState {
   foreign static clear()
 }
 
+class Event {
+  construct mouseMotion(from, to, delta) {
+    _type = 2
+    _from = from
+    _to = to
+    _delta = delta
+  }
+  construct mouseDown(pos, button) {
+    _type = 3
+    _pos = pos
+    _button = button
+  }
+  construct mouseUp(pos, button) {
+    _type = 4
+    _pos = pos
+    _button = button
+  }
+  construct mouseScroll(amt) {
+    _type = 5
+    _amt = amt
+  }
+
+  isMouseMotion { _type == 2 }
+  isMouseDown { _type == 3 }
+  isMouseUp { _type == 4 }
+  isMouseScroll { _type == 5 }
+
+  motionFrom { _from }
+  motionTo { _to }
+  motionDelta { _delta }
+
+  clickPos { _pos }
+  clickLMB { _button == 1 }
+  clickMMB { _button == 2 }
+  clickRMB { _button == 3 }
+
+  scrollAmt { _amt }
+}
+
 // from <nwge/audio/Buffer.hpp>
 foreign class AudioBuffer {
   construct new() {}
