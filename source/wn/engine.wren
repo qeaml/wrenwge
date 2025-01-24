@@ -22,6 +22,19 @@ class SubState {
   foreign static clear()
 }
 
+// from <nwge/audio/Buffer.hpp>
+foreign class AudioBuffer {
+  construct new() {}
+}
+
+// from <nwge/audio/Source.hpp>
+foreign class AudioSource {
+  construct new() {}
+
+  foreign buffer(buf)
+  foreign play()
+}
+
 // from <nwge/bind.hpp>
 foreign class KeyBind {
   construct new(name, key, callback) {}
@@ -44,7 +57,8 @@ class Console {
 foreign class Bundle {
   construct new(name) {}
 
-  foreign nqTexture(name, out)
+  foreign nqTexture(name, texture)
+  foreign nqAudio(name, buffer)
 }
 
 // from <nwge/render/Texture.hpp>

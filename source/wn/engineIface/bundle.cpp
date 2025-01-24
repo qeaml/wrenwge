@@ -3,12 +3,20 @@
 
 using namespace nwge;
 
-static void bundleNqTexture(WrenVM *vm)
+static void nqTexture(WrenVM *vm)
 {
   auto *bundle = bundleInSlot(vm, 0);
   const char *name = wrenGetSlotString(vm, 1);
   auto *texture = textureInSlot(vm, 2);
   bundle->nqTexture(name, *texture);
+}
+
+static void nqAudio(WrenVM *vm)
+{
+  auto *bundle = bundleInSlot(vm, 0);
+  const char *name = wrenGetSlotString(vm, 1);
+  auto *buffer = audioBufferInSlot(vm, 2);
+  bundle->nqBuffer(name, *buffer);
 }
 
 #define BIND(methodStatic, methodSignature, method) \
@@ -18,7 +26,8 @@ static void bundleNqTexture(WrenVM *vm)
 
 WrenForeignMethodFn bindBundleMethod(bool isStatic, const char *signature)
 {
-  BIND(false, "nqTexture(_,_)", bundleNqTexture)
+  BIND(false, "nqTexture(_,_)", nqTexture)
+  BIND(false, "nqAudio(_,_)", nqAudio)
   return nullptr;
 }
 

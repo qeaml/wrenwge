@@ -24,6 +24,7 @@ WrenForeignMethodFn bindEngineMethod(const char *className, bool isStatic, const
 {
   BIND_METHOD(State)
   BIND_METHOD(SubState)
+  BIND_METHOD(AudioSource)
   BIND_METHOD(KeyBind)
   BIND_METHOD(Console)
   BIND_METHOD(Render)
@@ -48,6 +49,8 @@ WrenForeignClassMethods bindForeignClass(
 
 WrenForeignClassMethods bindEngineClass(const char *className)
 {
+  BIND_CLASS(AudioBuffer)
+  BIND_CLASS(AudioSource)
   BIND_CLASS(KeyBind)
   BIND_CLASS(Bundle)
   BIND_CLASS(Texture)
