@@ -2,6 +2,24 @@ import "engine" for State, Console, Render, Bundle, Texture, KeyBind, JSON
 import "atlas" for TextureAtlas
 import "blue" for BlueState
 
+class Text {
+  construct new() {
+    _greeting = "<greeting not yet loaded>"
+  }
+
+  greeting { _greeting }
+
+  load(file) {
+    var raw = file.readString()
+    if(raw == null) {
+      return false
+    }
+    var value = JSON.parse(raw)
+    _greeting = value["greeting"]
+    return true
+  }
+}
+
 class InitState is State {
   construct new() {
     _timer = 0.0
@@ -30,14 +48,13 @@ class InitState is State {
     _exitBind = KeyBind.new("test.exit", "escape") {
       return false
     }
+
+    _text = Text.new()
+    _bundle.nqCustom("text.json", _text)
   }
 
   init() {
-    var text = JSON.parse("{\"greeting\":\"Yo\"}")
-    Console.print(text["greeting"])
-
-    var data = [1, 2, 3, "hello", "world", null, 134.1092]
-    Console.print(JSON.encode(data))
+    Console.print(_text.greeting)
   }
 
   on(evt) {

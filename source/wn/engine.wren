@@ -104,6 +104,23 @@ foreign class Bundle {
 
   foreign nqTexture(name, texture)
   foreign nqAudio(name, buffer)
+  // enqueue a file to be loaded, then call the load() method of the provided
+  // object with that file's RW
+  foreign nqCustom(name, out)
+}
+
+// from <nwge/data/rw.hpp>
+foreign class RW {
+  construct internalConstructorDoNotUse(ptr) {}
+
+  // read the entire file into a string
+  foreign readString()
+  // write the provided object as individual bytes to this file. if the object
+  // is a string, then that string is written directly. if the object is a list,
+  // then every number within is truncated to a byte and written. if the list
+  // contains anything other than a number or contains numbers and other
+  // objects, then no data is written. no other object type is supported.
+  foreign write(data)
 }
 
 // from <nwge/json/*>

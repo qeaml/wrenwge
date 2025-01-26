@@ -27,6 +27,7 @@ Maybe<Config> parseConfig(const nwge::json::Value &value)
 
   Config config{
     .engineConfig={
+      .loadBlocking=config::LoadBlocking::Always,
       .appName=*name,
     },
     .initialState=*initialState

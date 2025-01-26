@@ -33,6 +33,7 @@ WrenForeignMethodFn bindEngineMethod(const char *className, bool isStatic, const
   BIND_METHOD(KeyBind)
   BIND_METHOD(Console)
   BIND_METHOD(Bundle)
+  BIND_METHOD_X(RW, Rw)
   BIND_METHOD_X(JSON, Json)
   BIND_METHOD(Render)
   return nullptr;
@@ -53,12 +54,18 @@ WrenForeignClassMethods bindForeignClass(
     return bind##targetClass##Class(); \
   }
 
+#define BIND_CLASS_X(scriptClass, nativeClass) \
+  if(strcmp(className, #scriptClass) == 0) { \
+    return bind##nativeClass##Class(); \
+  }
+
 WrenForeignClassMethods bindEngineClass(const char *className)
 {
   BIND_CLASS(AudioBuffer)
   BIND_CLASS(AudioSource)
   BIND_CLASS(KeyBind)
   BIND_CLASS(Bundle)
+  BIND_CLASS_X(RW, Rw)
   BIND_CLASS(Texture)
   return {nullptr, nullptr};
 }

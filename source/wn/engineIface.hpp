@@ -20,6 +20,7 @@ WrenForeignMethodFn bindSubStateMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindKeyBindMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindConsoleMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindBundleMethod(bool isStatic, const char *signature);
+WrenForeignMethodFn bindRwMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindJsonMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindRenderMethod(bool isStatic, const char *signature);
 
@@ -31,6 +32,7 @@ WrenForeignClassMethods bindAudioBufferClass();
 WrenForeignClassMethods bindAudioSourceClass();
 WrenForeignClassMethods bindKeyBindClass();
 WrenForeignClassMethods bindBundleClass();
+WrenForeignClassMethods bindRwClass();
 WrenForeignClassMethods bindTextureClass();
 
 inline nwge::audio::Buffer *audioBufferInSlot(WrenVM *vm, int slot)
@@ -56,7 +58,11 @@ inline KeyBindWrapper *keyBindInSlot(WrenVM *vm, int slot) {
 }
 
 inline nwge::data::Bundle *bundleInSlot(WrenVM *vm, int slot) {
-  return reinterpret_cast<nwge::data::Bundle*>(wrenGetSlotForeign(vm, slot));
+return reinterpret_cast<nwge::data::Bundle*>(wrenGetSlotForeign(vm, slot));
+}
+
+inline nwge::data::RW *rwInSlot(WrenVM *vm, int slot) {
+  return reinterpret_cast<nwge::data::RW*>(wrenGetSlotForeign(vm, slot));
 }
 
 inline nwge::render::Texture *textureInSlot(WrenVM *vm, int slot) {
