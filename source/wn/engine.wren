@@ -106,12 +106,18 @@ foreign class Bundle {
   foreign nqAudio(name, buffer)
 }
 
+// from <nwge/json/*>
+class JSON {
+  foreign static parse(source)
+  foreign static encode(value)
+}
+
 // from <nwge/render/Texture.hpp>
 foreign class Texture {
   construct new() {}
 }
 
-// from <nwge/render/*.hpp>
+// from <nwge/render/*>
 class Render {
   foreign static clear(color)
   static clear() { clear([]) }

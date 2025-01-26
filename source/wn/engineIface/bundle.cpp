@@ -1,5 +1,8 @@
 #include "../engineIface.hpp"
+#include "../ScriptRuntime.hpp"
 #include <nwge/data/bundle.hpp>
+#include <nwge/dialog.hpp>
+#include <nwge/json/parse.hpp>
 
 using namespace nwge;
 

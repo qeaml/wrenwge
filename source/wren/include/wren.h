@@ -80,7 +80,7 @@ struct WrenLoadModuleResult;
 // is handed back to you in this callback, so that you can free memory if appropriate.
 typedef void (*WrenLoadModuleCompleteFn)(WrenVM* vm, const char* name, struct WrenLoadModuleResult result);
 
-// The result of a loadModuleFn call. 
+// The result of a loadModuleFn call.
 // [source] is the source code for the module, or NULL if the module is not found.
 // [onComplete] an optional callback that will be called once Wren is done with the result.
 typedef struct WrenLoadModuleResult

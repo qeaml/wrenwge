@@ -20,6 +20,11 @@ WrenForeignMethodFn bindForeignMethod(
     return bind##targetClass##Method(isStatic, signature); \
   }
 
+#define BIND_METHOD_X(scriptClass, nativeClass) \
+  if(strcmp(className, #scriptClass) == 0) { \
+    return bind##nativeClass##Method(isStatic, signature); \
+  }
+
 WrenForeignMethodFn bindEngineMethod(const char *className, bool isStatic, const char *signature)
 {
   BIND_METHOD(State)
@@ -27,8 +32,9 @@ WrenForeignMethodFn bindEngineMethod(const char *className, bool isStatic, const
   BIND_METHOD(AudioSource)
   BIND_METHOD(KeyBind)
   BIND_METHOD(Console)
-  BIND_METHOD(Render)
   BIND_METHOD(Bundle)
+  BIND_METHOD_X(JSON, Json)
+  BIND_METHOD(Render)
   return nullptr;
 }
 

@@ -1,4 +1,4 @@
-import "engine" for State, Console, Render, Bundle, Texture, KeyBind
+import "engine" for State, Console, Render, Bundle, Texture, KeyBind, JSON
 import "atlas" for TextureAtlas
 import "blue" for BlueState
 
@@ -30,6 +30,11 @@ class InitState is State {
     _exitBind = KeyBind.new("test.exit", "escape") {
       return false
     }
+  }
+
+  init() {
+    var text = JSON.parse("{\"greeting\":\"Yo\"}")
+    Console.print(text["greeting"])
   }
 
   on(evt) {

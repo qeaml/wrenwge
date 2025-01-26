@@ -20,6 +20,7 @@ WrenForeignMethodFn bindSubStateMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindKeyBindMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindConsoleMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindBundleMethod(bool isStatic, const char *signature);
+WrenForeignMethodFn bindJsonMethod(bool isStatic, const char *signature);
 WrenForeignMethodFn bindRenderMethod(bool isStatic, const char *signature);
 
 WrenForeignClassMethods bindForeignClass(
