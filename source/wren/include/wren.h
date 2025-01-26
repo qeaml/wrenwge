@@ -1,3 +1,5 @@
+// NOLINTBEGIN
+
 #ifndef wren_h
 #define wren_h
 
@@ -552,3 +554,5 @@ WREN_API void* wrenGetUserData(WrenVM* vm);
 WREN_API void wrenSetUserData(WrenVM* vm, void* userData);
 
 #endif
+
+// NOLINTEND

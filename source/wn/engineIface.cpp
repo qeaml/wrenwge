@@ -34,6 +34,7 @@ WrenForeignMethodFn bindEngineMethod(const char *className, bool isStatic, const
   BIND_METHOD(Console)
   BIND_METHOD(Bundle)
   BIND_METHOD_X(RW, Rw)
+  BIND_METHOD(Store)
   BIND_METHOD_X(JSON, Json)
   BIND_METHOD(Render)
   return nullptr;
@@ -66,6 +67,28 @@ WrenForeignClassMethods bindEngineClass(const char *className)
   BIND_CLASS(KeyBind)
   BIND_CLASS(Bundle)
   BIND_CLASS_X(RW, Rw)
+  BIND_CLASS(Store)
   BIND_CLASS(Texture)
   return {nullptr, nullptr};
+}
+
+/*
+Trigger Warning: Pointer stored as string, blind memset
+*/
+bool makeRW(WrenVM *vm, nwge::data::RW &file)
+{
+  wrenEnsureSlots(vm, 2);
+  wrenGetVariable(vm, "engine", "RW", 0);
+  /* ew */
+  SDL_RWops *rwPtr = &*file;
+  wrenSetSlotBytes(vm, 1, reinterpret_cast<ConstCStr>(&rwPtr), sizeof(SDL_RWops*));
+  auto *call = wrenMakeCallHandle(vm, "internalConstructorDoNotUse(_)");
+  auto res = wrenCall(vm, call);
+  wrenReleaseHandle(vm, call);
+  if(res != WREN_RESULT_SUCCESS) {
+    return false;
+  }
+  /* EW */
+  SDL_memset(&file, 0, sizeof(nwge::data::RW));
+  return true;
 }

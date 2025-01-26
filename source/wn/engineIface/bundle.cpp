@@ -22,32 +22,20 @@ static void nqAudio(WrenVM *vm)
   bundle->nqBuffer(name, *buffer);
 }
 
-/*
-Trigger Warning: Pointers stored as strings & memset
-*/
+
 static bool loadHandle(data::RW &file, AnyPtr handle)
 {
   auto *vm = getScriptRuntime()->vm();
-  wrenEnsureSlots(vm, 2);
-  wrenGetVariable(vm, "engine", "RW", 0);
-  /* ew */
-  SDL_RWops *rwPtr = &*file;
-  wrenSetSlotBytes(vm, 1, reinterpret_cast<ConstCStr>(&rwPtr), sizeof(SDL_RWops*));
-  auto *call = wrenMakeCallHandle(vm, "internalConstructorDoNotUse(_)");
-  auto res = wrenCall(vm, call);
-  wrenReleaseHandle(vm, call);
-  if(res != WREN_RESULT_SUCCESS) {
+  if(!makeRW(vm, file)) {
     return false;
   }
-  /* EW */
-  SDL_memset(&file, 0, sizeof(data::RW));
 
   wrenEnsureSlots(vm, 2);
   auto *rwHandle = wrenGetSlotHandle(vm, 0);
   wrenSetSlotHandle(vm, 1, rwHandle);
   wrenSetSlotHandle(vm, 0, reinterpret_cast<WrenHandle*>(handle));
-  call = wrenMakeCallHandle(vm, "load(_)");
-  res = wrenCall(vm, call);
+  auto *call = wrenMakeCallHandle(vm, "load(_)");
+  auto res = wrenCall(vm, call);
   wrenReleaseHandle(vm, call);
   wrenReleaseHandle(vm, rwHandle);
   wrenReleaseHandle(vm, reinterpret_cast<WrenHandle*>(handle));

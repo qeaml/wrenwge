@@ -123,6 +123,14 @@ foreign class RW {
   foreign write(data)
 }
 
+// from <nwge/data/store.hpp>
+foreign class Store {
+  construct new(name) {}
+
+  foreign nqLoad(name, out)
+  foreign nqSave(name, src)
+}
+
 // from <nwge/json/*>
 class JSON {
   foreign static parse(source)

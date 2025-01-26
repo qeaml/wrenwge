@@ -1,4 +1,4 @@
-import "engine" for State, Console, Render, Bundle, Texture, KeyBind, JSON
+import "engine" for State, Console, Render, Bundle, Texture, KeyBind, JSON, Store
 import "atlas" for TextureAtlas
 import "blue" for BlueState
 
@@ -17,6 +17,24 @@ class Text {
     var value = JSON.parse(raw)
     _greeting = value["greeting"]
     return true
+  }
+}
+
+class Counter {
+  construct new() {
+    _number = 0
+  }
+
+  number { _number }
+
+  load(file) {
+    var raw = file.readString()
+    // why atoi when can have JSON.parse
+    _number = JSON.parse(raw)
+  }
+
+  save(file) {
+    file.write("%(_number + 1)")
   }
 }
 
@@ -51,10 +69,16 @@ class InitState is State {
 
     _text = Text.new()
     _bundle.nqCustom("text.json", _text)
+
+    _store = Store.new("")
+    _counter = Counter.new()
+    _store.nqLoad("counter", _counter)
   }
 
   init() {
     Console.print(_text.greeting)
+    Console.print("Counter: %(_counter.number)")
+    _store.nqSave("counter", _counter)
   }
 
   on(evt) {
