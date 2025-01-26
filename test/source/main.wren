@@ -35,6 +35,9 @@ class InitState is State {
   init() {
     var text = JSON.parse("{\"greeting\":\"Yo\"}")
     Console.print(text["greeting"])
+
+    var data = [1, 2, 3, "hello", "world", null, 134.1092]
+    Console.print(JSON.encode(data))
   }
 
   on(evt) {

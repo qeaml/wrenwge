@@ -1,5 +1,6 @@
 #include "../engineIface.hpp"
 #include <nwge/dialog.hpp>
+#include <nwge/json/builder.hpp>
 #include <nwge/json/parse.hpp>
 
 using namespace nwge;
@@ -44,6 +45,45 @@ static void json2wren(WrenVM *vm, int slot, const json::Value &value)
   }
 }
 
+static json::Value wren2json(WrenVM *vm, int slot)
+{
+  switch(wrenGetSlotType(vm, slot)) {
+  case WREN_TYPE_BOOL:
+    return wrenGetSlotBool(vm, slot);
+
+  case WREN_TYPE_NUM:
+    return wrenGetSlotDouble(vm, slot);
+
+  case WREN_TYPE_LIST: {
+    json::ArrayBuilder builder;
+    int count = wrenGetListCount(vm, slot);
+    wrenEnsureSlots(vm, slot+2);
+    for(int i = 0; i < count; ++i) {
+      wrenGetListElement(vm, slot, i, slot+1);
+      builder.add(wren2json(vm, slot+1));
+    }
+    return builder.finish();
+  }
+
+  case WREN_TYPE_MAP: {
+    dialog::error("JSON error"_sv,
+      "Wren maps currently cannot be encoded as JSON."_sv);
+    return nullptr;
+  }
+
+  case WREN_TYPE_NULL:
+    return nullptr;
+
+  case WREN_TYPE_STRING: {
+    int length;
+    ConstCStr ptr = wrenGetSlotBytes(vm, slot, &length);
+    return StringView{ptr, static_cast<usize>(length)};
+  }
+  }
+
+  NWGE_UNREACHABLE("Invalid Wren object type");
+}
+
 static void parseFromString(WrenVM *vm)
 {
   int length;
@@ -73,6 +113,13 @@ static void parse(WrenVM *vm)
   }
 }
 
+static void encode(WrenVM *vm)
+{
+  auto value = wren2json(vm, 1);
+  auto str = json::encode(value);
+  wrenSetSlotBytes(vm, 0, str.data(), str.size());
+}
+
 #define BIND(methodStatic, methodSignature, method) \
   if(isStatic == (methodStatic) && strcmp(signature, methodSignature) == 0) { \
     return &(method); \
@@ -81,5 +128,6 @@ static void parse(WrenVM *vm)
 WrenForeignMethodFn bindJsonMethod(bool isStatic, const char *signature)
 {
   BIND(true, "parse(_)", parse)
+  BIND(true, "encode(_)", encode)
   return nullptr;
 }
