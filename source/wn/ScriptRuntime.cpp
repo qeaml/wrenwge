@@ -121,15 +121,17 @@ ScriptRuntime::~ScriptRuntime()
 {
   if(mVM != nullptr) {
     clearSubStates();
-    if(mCurrStateHandle != nullptr) {
-      wrenReleaseHandle(mVM, mCurrStateHandle);
-    }
-    if(mNextStateHandle != nullptr) {
-      wrenReleaseHandle(mVM, mNextStateHandle);
-    }
-    if(mEventClass != nullptr) {
-      wrenReleaseHandle(mVM, mEventClass);
-    }
+    if(mCurrStateHandle != nullptr) { wrenReleaseHandle(mVM, mCurrStateHandle); }
+    if(mNextStateHandle != nullptr) { wrenReleaseHandle(mVM, mNextStateHandle); }
+    if(mEventClass != nullptr) { wrenReleaseHandle(mVM, mEventClass); }
+    if(mInitMethod != nullptr) { wrenReleaseHandle(mVM, mInitMethod); }
+    if(mMouseMotionMethod != nullptr) { wrenReleaseHandle(mVM, mMouseMotionMethod); }
+    if(mMouseDownMethod != nullptr) { wrenReleaseHandle(mVM, mMouseDownMethod); }
+    if(mMouseUpMethod != nullptr) { wrenReleaseHandle(mVM, mMouseUpMethod); }
+    if(mMouseScrollMethod != nullptr) { wrenReleaseHandle(mVM, mMouseScrollMethod); }
+    if(mOnMethod != nullptr) { wrenReleaseHandle(mVM, mOnMethod); }
+    if(mTickMethod != nullptr) { wrenReleaseHandle(mVM, mTickMethod); }
+    if(mRenderMethod != nullptr) { wrenReleaseHandle(mVM, mRenderMethod); }
     wrenFreeVM(mVM);
     mVM = nullptr;
   }
@@ -167,6 +169,15 @@ bool ScriptRuntime::init(const char *initialState)
     dialog::error("Script Error", "A script error has occurred.");
     return false;
   }
+
+  mInitMethod = wrenMakeCallHandle(mVM, "init()");
+  mMouseMotionMethod = wrenMakeCallHandle(mVM, "mouseMotion(_,_,_)");
+  mMouseDownMethod = wrenMakeCallHandle(mVM, "mouseDown(_,_)");
+  mMouseUpMethod = wrenMakeCallHandle(mVM, "mouseUp(_,_)");
+  mMouseScrollMethod = wrenMakeCallHandle(mVM, "mouseScroll(_)");
+  mOnMethod = wrenMakeCallHandle(mVM, "on(_)");
+  mTickMethod = wrenMakeCallHandle(mVM, "tick(_)");
+  mRenderMethod = wrenMakeCallHandle(mVM, "render()");
 
   mNextStateHandle = wrenGetSlotHandle(mVM, 0);
   return true;
@@ -241,9 +252,7 @@ bool ScriptRuntime::fwdMouseMotion(WrenHandle *state, const MouseMotion &motion)
   wrenInsertInList(mVM, 3, -1, 4);
 
   /* mouseMotion(from,to,delta) constructor */
-  auto *call = wrenMakeCallHandle(mVM, "mouseMotion(_,_,_)");
-  wrenCall(mVM, call);
-  wrenReleaseHandle(mVM, call);
+  wrenCall(mVM, mMouseMotionMethod);
 
   return fwdEvent(state, wrenGetSlotHandle(mVM, 0));
 }
@@ -273,12 +282,11 @@ bool ScriptRuntime::fwdMouseClick(WrenHandle *state, bool down, const MouseClick
   /* mouseDown or mouseUp constructor */
   WrenHandle *call;
   if(down) {
-    call = wrenMakeCallHandle(mVM, "mouseDown(_,_)");
+    call = mMouseDownMethod;
   } else {
-    call = wrenMakeCallHandle(mVM, "mouseUp(_,_)");
+    call = mMouseUpMethod;
   }
   wrenCall(mVM, call);
-  wrenReleaseHandle(mVM, call);
 
   return fwdEvent(state, wrenGetSlotHandle(mVM, 0));
 }
@@ -293,9 +301,7 @@ bool ScriptRuntime::fwdMouseScroll(WrenHandle *state, s32 amt)
   wrenEnsureSlots(mVM, 2);
   wrenSetSlotHandle(mVM, 0, mEventClass);
   wrenSetSlotDouble(mVM, 1, amt);
-  WrenHandle *call = wrenMakeCallHandle(mVM, "mouseScroll(_)");
-  wrenCall(mVM, call);
-  wrenReleaseHandle(mVM, call);
+  wrenCall(mVM, mMouseScrollMethod);
 
   return fwdEvent(state, wrenGetSlotHandle(mVM, 0));
 }
@@ -305,12 +311,12 @@ bool ScriptRuntime::fwdEvent(WrenHandle *state, WrenHandle *event)
   wrenEnsureSlots(mVM, 2);
   wrenSetSlotHandle(mVM, 0, state);
   wrenSetSlotHandle(mVM, 1, event);
-  auto *call = wrenMakeCallHandle(mVM, "on(_)");
-  wrenCall(mVM, call);
-  wrenReleaseHandle(mVM, call);
+  wrenCall(mVM, mOnMethod);
   wrenReleaseHandle(mVM, event);
-  if(wrenGetSlotType(mVM, 0) == WREN_TYPE_BOOL) {
-    return wrenGetSlotBool(mVM, 0);
+  if(wrenGetSlotCount(mVM) > 0) {
+    if(wrenGetSlotType(mVM, 0) == WREN_TYPE_BOOL) {
+      return wrenGetSlotBool(mVM, 0);
+    }
   }
   return true;
 }
@@ -323,13 +329,16 @@ bool ScriptRuntime::tick(f32 delta)
 
   wrenEnsureSlots(mVM, 2);
   wrenSetSlotHandle(mVM, 0, mCurrStateHandle);
-  auto *tickMethod = wrenMakeCallHandle(mVM, "tick(_)");
   wrenSetSlotDouble(mVM, 1, delta);
-  auto res = wrenCall(mVM, tickMethod);
-  wrenReleaseHandle(mVM, tickMethod);
+  auto res = wrenCall(mVM, mTickMethod);
   if(res != WREN_RESULT_SUCCESS) {
     dialog::error("Script Error", "A script error has occurred.");
     return false;
+  }
+  if(wrenGetSlotCount(mVM) > 0) {
+    if(wrenGetSlotType(mVM, 0) == WREN_TYPE_BOOL) {
+      return wrenGetSlotBool(mVM, 0);
+    }
   }
 
   return true;
@@ -339,9 +348,7 @@ bool ScriptRuntime::swapToNextState()
 {
   wrenEnsureSlots(mVM, 2);
   wrenSetSlotHandle(mVM, 0, mNextStateHandle);
-  auto *initMethod = wrenMakeCallHandle(mVM, "init()");
-  auto res = wrenCall(mVM, initMethod);
-  wrenReleaseHandle(mVM, initMethod);
+  auto res = wrenCall(mVM, mInitMethod);
   if(res != WREN_RESULT_SUCCESS) {
     dialog::error("Script Error", "A script error has occurred.");
     return false;
@@ -361,9 +368,7 @@ void ScriptRuntime::render() const
 {
   wrenEnsureSlots(mVM, 1);
   wrenSetSlotHandle(mVM, 0, mCurrStateHandle);
-  auto *renderMethod = wrenMakeCallHandle(mVM, "render()");
-  wrenCall(mVM, renderMethod);
-  wrenReleaseHandle(mVM, renderMethod);
+  wrenCall(mVM, mRenderMethod);
 }
 
 void ScriptRuntime::swapState(WrenHandle *nextStateHandle)

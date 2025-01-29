@@ -1,4 +1,5 @@
 #include "ScriptSubState.hpp"
+#include "wren.h"
 #include <nwge/dialog.hpp>
 
 using namespace nwge;
@@ -7,11 +8,15 @@ class ScriptSubState: public nwge::SubState {
 public:
   ScriptSubState(WrenHandle *subStateHandle)
     : mRuntime(*getScriptRuntime()),
-      mSubStateHandle(subStateHandle)
+      mSubStateHandle(subStateHandle),
+      mTickMethod(wrenMakeCallHandle(mRuntime.vm(), "tick(_)")),
+      mRenderMethod(wrenMakeCallHandle(mRuntime.vm(), "render()"))
   {}
 
   ~ScriptSubState()
   {
+    wrenReleaseHandle(mRuntime.vm(), mTickMethod);
+    wrenReleaseHandle(mRuntime.vm(), mRenderMethod);
     wrenReleaseHandle(mRuntime.vm(), mSubStateHandle);
     wrenCollectGarbage(mRuntime.vm());
   }
@@ -25,10 +30,8 @@ public:
   {
     wrenEnsureSlots(mRuntime.vm(), 2);
     wrenSetSlotHandle(mRuntime.vm(), 0, mSubStateHandle);
-    auto *tickMethod = wrenMakeCallHandle(mRuntime.vm(), "tick(_)");
     wrenSetSlotDouble(mRuntime.vm(), 1, delta);
-    auto res = wrenCall(mRuntime.vm(), tickMethod);
-    wrenReleaseHandle(mRuntime.vm(), tickMethod);
+    auto res = wrenCall(mRuntime.vm(), mTickMethod);
     if(res != WREN_RESULT_SUCCESS) {
       dialog::error("Script Error", "A script error has occurred.");
       return false;
@@ -40,14 +43,14 @@ public:
   {
     wrenEnsureSlots(mRuntime.vm(), 1);
     wrenSetSlotHandle(mRuntime.vm(), 0, mSubStateHandle);
-    auto *renderMethod = wrenMakeCallHandle(mRuntime.vm(), "render()");
-    wrenCall(mRuntime.vm(), renderMethod);
-    wrenReleaseHandle(mRuntime.vm(), renderMethod);
+    wrenCall(mRuntime.vm(), mRenderMethod);
   }
 
 private:
   ScriptRuntime &mRuntime;
   WrenHandle *mSubStateHandle;
+  WrenHandle *mTickMethod;
+  WrenHandle *mRenderMethod;
 };
 
 SubState *createScriptSubState(WrenHandle *subStateHandle)

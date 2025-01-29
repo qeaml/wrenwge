@@ -30,6 +30,15 @@ private:
   WrenHandle *mCurrStateHandle = nullptr;
   WrenHandle *mNextStateHandle = nullptr;
 
+  WrenHandle *mInitMethod = nullptr;
+  WrenHandle *mMouseMotionMethod = nullptr;
+  WrenHandle *mMouseDownMethod = nullptr;
+  WrenHandle *mMouseUpMethod = nullptr;
+  WrenHandle *mMouseScrollMethod = nullptr;
+  WrenHandle *mOnMethod = nullptr;
+  WrenHandle *mTickMethod = nullptr;
+  WrenHandle *mRenderMethod = nullptr;
+
   bool swapToNextState();
 
   WrenHandle *mEventClass = nullptr;
