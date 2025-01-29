@@ -1,4 +1,5 @@
 #include "../engineIface.hpp"
+#include <cstring>
 #include <nwge/dialog.hpp>
 #include <nwge/json/builder.hpp>
 #include <nwge/json/parse.hpp>
@@ -66,9 +67,17 @@ static json::Value wren2json(WrenVM *vm, int slot)
   }
 
   case WREN_TYPE_MAP: {
-    dialog::error("JSON error"_sv,
-      "Wren maps currently cannot be encoded as JSON."_sv);
-    return nullptr;
+    json::ObjectBuilder builder;
+    wrenEnsureSlots(vm, slot+3);
+    auto *iter = wrenIterateMap(vm, slot);
+    while(wrenNextInMap(iter, slot+1, slot+2) != 0) {
+      if(wrenGetSlotType(vm, slot+1) != WREN_TYPE_STRING) {
+        continue;
+      }
+      builder.set(wrenGetSlotString(vm, slot+1), wren2json(vm, slot+2));
+    }
+    wrenFreeIterator(iter);
+    return builder.finish();
   }
 
   case WREN_TYPE_NULL:

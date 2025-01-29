@@ -1884,6 +1884,52 @@ void wrenGetMapValue(WrenVM* vm, int mapSlot, int keySlot, int valueSlot)
   vm->apiStack[valueSlot] = value;
 }
 
+struct WrenMapIterator
+{
+  WrenVM *vm;
+  ObjMap *map;
+  int64_t idx;
+};
+
+static int iterNext(WrenMapIterator *iter)
+{
+  while(iter->idx++ < iter->map->capacity) {
+    MapEntry* cur = &iter->map->entries[iter->idx];
+    if(IS_UNDEFINED(cur->key)) { continue; }
+    return 1;
+  }
+  return 0;
+}
+
+WrenMapIterator *wrenIterateMap(WrenVM *vm, int mapSlot)
+{
+  validateApiSlot(vm, mapSlot);
+  ASSERT(IS_MAP(vm->apiStack[mapSlot]), "Slot must hold a map.");
+
+  WrenMapIterator *iter = ALLOCATE(vm, WrenMapIterator);
+  iter->vm = vm;
+  iter->map = AS_MAP(vm->apiStack[mapSlot]);
+  iter->idx = -1;
+  return iter;
+}
+
+int wrenNextInMap(WrenMapIterator *iter, int keySlot, int valueSlot)
+{
+  int hasNext = iterNext(iter);
+  if(hasNext == 0) {
+    return 0;
+  }
+
+  iter->vm->apiStack[keySlot] = iter->map->entries[iter->idx].key;
+  iter->vm->apiStack[valueSlot] = iter->map->entries[iter->idx].value;
+  return 1;
+}
+
+void wrenFreeIterator(WrenMapIterator *iter)
+{
+  DEALLOCATE(iter->vm, iter);
+}
+
 void wrenSetMapValue(WrenVM* vm, int mapSlot, int keySlot, int valueSlot)
 {
   validateApiSlot(vm, mapSlot);

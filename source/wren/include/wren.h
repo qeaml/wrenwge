@@ -13,7 +13,7 @@
 #define WREN_VERSION_PATCH 0
 
 // A human-friendly string representation of the version.
-#define WREN_VERSION_STRING "0.4.0"
+#define WREN_VERSION_STRING "0.4.0-wn"
 
 // A monotonically increasing numeric representation of the version number. Use
 // this if you want to do range checks over versions.
@@ -529,6 +529,14 @@ WREN_API void wrenSetMapValue(WrenVM* vm, int mapSlot, int keySlot, int valueSlo
 // set to null, the same behaviour as the Wren Map API.
 WREN_API void wrenRemoveMapValue(WrenVM* vm, int mapSlot, int keySlot,
                         int removedValueSlot);
+
+typedef struct WrenMapIterator WrenMapIterator;
+
+WREN_API WrenMapIterator* wrenIterateMap(WrenVM *vm, int mapSlot);
+
+WREN_API int wrenNextInMap(WrenMapIterator *iter, int keySlot, int valueSlot);
+
+WREN_API void wrenFreeIterator(WrenMapIterator *iter);
 
 // Looks up the top level variable with [name] in resolved [module] and stores
 // it in [slot].

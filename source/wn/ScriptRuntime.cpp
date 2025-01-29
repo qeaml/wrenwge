@@ -150,6 +150,7 @@ bool ScriptRuntime::init(const char *initialState)
   auto nwgeVer = nwgeVersion();
   console::print("WreNwge v" WN_VER_STR ": Wren v" WREN_VERSION_STRING " + Nwge v{}.{}",
     nwgeVer.major, nwgeVer.minor);
+  console::print("Note: WreNwge uses a slightly modified version of Wren."_sv);
 
   auto res = wrenInterpret(mVM, "preload", "import \"main\"");
   if(res != WREN_RESULT_SUCCESS) {

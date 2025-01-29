@@ -29,12 +29,12 @@ class Counter {
 
   load(file) {
     var raw = file.readString()
-    // why atoi when can have JSON.parse
-    _number = JSON.parse(raw)
+    var obj = JSON.parse(raw)
+    _number = obj["number"]
   }
 
   save(file) {
-    file.write("%(_number + 1)")
+    file.write(JSON.encode({"number": _number + 1}))
   }
 }
 
