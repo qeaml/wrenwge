@@ -61,10 +61,10 @@ s32 main(s32 argc, CStr *argv)
   }
 
   initScriptRuntime(fileName);
-  atexit(deleteScriptRuntime);
   startPtr(
     createScriptState(config->initialState.data()),
     std::move(config->engineConfig)
   );
+  deleteScriptRuntime();
   return 0;
 }

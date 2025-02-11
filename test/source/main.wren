@@ -30,7 +30,9 @@ class Counter {
   load(file) {
     var raw = file.readString()
     var obj = JSON.parse(raw)
-    _number = obj["number"]
+    if(obj != null) {
+      _number = obj["number"]
+    }
   }
 
   save(file) {

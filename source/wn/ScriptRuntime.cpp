@@ -85,6 +85,9 @@ static void error(
 static void *reallocate(void *memory, size_t newSize, void *userData)
 {
   if(memory == nullptr) {
+    if(newSize == 0) {
+      return nullptr;
+    }
     return nwgeAlloc(newSize);
   }
   if(newSize == 0) {
@@ -120,7 +123,6 @@ ScriptRuntime::ScriptRuntime(ScriptRuntime &&other) noexcept
 ScriptRuntime::~ScriptRuntime()
 {
   if(mVM != nullptr) {
-    clearSubStates();
     if(mCurrStateHandle != nullptr) { wrenReleaseHandle(mVM, mCurrStateHandle); }
     if(mNextStateHandle != nullptr) { wrenReleaseHandle(mVM, mNextStateHandle); }
     if(mEventClass != nullptr) { wrenReleaseHandle(mVM, mEventClass); }

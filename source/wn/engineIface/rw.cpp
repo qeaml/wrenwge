@@ -1,18 +1,19 @@
 #include "../engineIface.hpp"
 #include <nwge/common/slice.hpp>
-#include <nwge/data/util.hpp>
+#include <nwge/data/FileView.hpp>
 
 using namespace nwge;
 
 static void readString(WrenVM *vm)
 {
   auto *rw = rwInSlot(vm, 0);
-  auto data = data::readEntireFile(*rw);
-  if(!data.present()) {
+  data::FileView view{*rw};
+  if(!view.ok()) {
     wrenSetSlotBytes(vm, 0, "", 0);
     return;
   }
-  wrenSetSlotBytes(vm, 0, data->data(), data->size());
+  auto data = view.data();
+  wrenSetSlotBytes(vm, 0, data.data(), data.size());
 }
 
 static ScratchArray<char> getBytes(WrenVM *vm, int slot)
