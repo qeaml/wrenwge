@@ -39,7 +39,7 @@ static bool loadHandle(data::RW &file, AnyPtr handle)
   wrenReleaseHandle(vm, call);
   wrenReleaseHandle(vm, rwHandle);
   wrenReleaseHandle(vm, reinterpret_cast<WrenHandle*>(handle));
-  return res == WREN_RESULT_SUCCESS;
+  return true;
 }
 
 static void nqCustom(WrenVM *vm)

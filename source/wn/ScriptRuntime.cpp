@@ -2,11 +2,13 @@
 #include "engine.wren.hpp"
 #include "engineIface.hpp"
 #include "version.h"
+#include <cmath>
 #include <cstring>
 #include <nwge/console.hpp>
 #include <nwge/common/version.h>
 #include <nwge/data/bundle.hpp>
 #include <nwge/dialog.hpp>
+#include <nwge/render/draw.hpp>
 #include <nwge/state.hpp>
 
 using namespace nwge;
@@ -71,15 +73,42 @@ static void write(WrenVM* vm, const char* text)
   console::print(text);
 }
 
+void ScriptRuntime::error(WrenErrorType type, const char *module, int line, const char *message)
+{
+  switch(type) {
+  case WREN_ERROR_COMPILE:
+    mCompileError = true;
+    mErrorMessage.clear();
+    mErrorMessage.append(ScratchString::formatted(
+      "{}:{}: {}",
+      module, line, message));
+    break;
+
+  case WREN_ERROR_RUNTIME:
+    mRuntimeError = true;
+    mErrorMessage.clear();
+    mErrorMessage.append(ScratchString::formatted(
+      "{}\n"
+      "Stack trace:\n",
+      message));
+    break;
+
+  case WREN_ERROR_STACK_TRACE:
+    mErrorMessage.append(ScratchString::formatted(
+      "  {}:{} in {}\n",
+      module, line, message));
+    break;
+  }
+}
+
 static void error(
-  WrenVM* vm,
+  [[maybe_unused]] WrenVM* vm,
   WrenErrorType type,
   const char* module,
   int line,
   const char* message)
 {
-  const auto *moduleName = module == nullptr ? "???" : module;
-  console::error("{}:{} : {}", moduleName, line, message);
+  gScriptRuntime->error(type, module, line, message);
 }
 
 static void *reallocate(void *memory, size_t newSize, void *userData)
@@ -102,12 +131,12 @@ ScriptRuntime::ScriptRuntime(StringView bundle)
 {
   WrenConfiguration config;
   wrenInitConfiguration(&config);
-  config.loadModuleFn = &loadModule;
-  config.bindForeignMethodFn = &bindForeignMethod;
-  config.bindForeignClassFn = &bindForeignClass;
-  config.writeFn = &write;
-  config.errorFn = &error;
-  config.reallocateFn = &reallocate;
+  config.loadModuleFn = &::loadModule;
+  config.bindForeignMethodFn = &::bindForeignMethod;
+  config.bindForeignClassFn = &::bindForeignClass;
+  config.writeFn = &::write;
+  config.errorFn = &::error;
+  config.reallocateFn = &::reallocate;
 
   mVM = wrenNewVM(&config);
 }
@@ -145,7 +174,7 @@ void ScriptRuntime::preload()
   mBundle.load({mBundleFileName});
 }
 
-bool ScriptRuntime::init(const char *initialState)
+void ScriptRuntime::init(const char *initialState)
 {
   gScriptRuntime = this;
 
@@ -156,8 +185,7 @@ bool ScriptRuntime::init(const char *initialState)
 
   auto res = wrenInterpret(mVM, "preload", "import \"main\"");
   if(res != WREN_RESULT_SUCCESS) {
-    dialog::error("Script Error", "A script error has occurred.");
-    return false;
+    return;
   }
 
   wrenEnsureSlots(mVM, 1);
@@ -169,8 +197,7 @@ bool ScriptRuntime::init(const char *initialState)
   res = wrenCall(mVM, newMethod);
   wrenReleaseHandle(mVM, newMethod);
   if(res != WREN_RESULT_SUCCESS) {
-    dialog::error("Script Error", "A script error has occurred.");
-    return false;
+    return;
   }
 
   mInitMethod = wrenMakeCallHandle(mVM, "init()");
@@ -183,11 +210,14 @@ bool ScriptRuntime::init(const char *initialState)
   mRenderMethod = wrenMakeCallHandle(mVM, "render()");
 
   mNextStateHandle = wrenGetSlotHandle(mVM, 0);
-  return true;
 }
 
 bool ScriptRuntime::on(nwge::Event &evt, WrenHandle *state)
 {
+  if(mCompileError || mRuntimeError) {
+    return true;
+  }
+
   /* used for SubStates, use main state if nullptr */
   if(state == nullptr) {
     state = mCurrStateHandle;
@@ -326,6 +356,11 @@ bool ScriptRuntime::fwdEvent(WrenHandle *state, WrenHandle *event)
 
 bool ScriptRuntime::tick(f32 delta)
 {
+  if(mCompileError || mRuntimeError) {
+    mErrorTimer += delta;
+    return true;
+  }
+
   if(mNextStateHandle != nullptr) {
     return swapToNextState();
   }
@@ -335,8 +370,7 @@ bool ScriptRuntime::tick(f32 delta)
   wrenSetSlotDouble(mVM, 1, delta);
   auto res = wrenCall(mVM, mTickMethod);
   if(res != WREN_RESULT_SUCCESS) {
-    dialog::error("Script Error", "A script error has occurred.");
-    return false;
+    return true;
   }
   if(wrenGetSlotCount(mVM) > 0) {
     if(wrenGetSlotType(mVM, 0) == WREN_TYPE_BOOL) {
@@ -369,9 +403,82 @@ bool ScriptRuntime::swapToNextState()
 
 void ScriptRuntime::render() const
 {
+  if(mCompileError) {
+    renderCompileError();
+    return;
+  }
+  if(mRuntimeError) {
+    renderRuntimeError();
+    return;
+  }
+
   wrenEnsureSlots(mVM, 1);
   wrenSetSlotHandle(mVM, 0, mCurrStateHandle);
   wrenCall(mVM, mRenderMethod);
+}
+
+static constexpr f32
+  cErrorBannerX = 0.0f,
+  cErrorBannerY = 0.0f,
+  cErrorBannerZ = 0.15f,
+  cErrorBannerW = 1.0f,
+  cErrorBannerH = 0.4f,
+  cErrorBannerPadding = 0.03f,
+  cErrorBannerStartShade = 1.0f,
+  cErrorBannerEndShade = 0.1f,
+  cErrorBannerShadeTime = 2.0f,
+  cErrorTitleX = cErrorBannerX+cErrorBannerPadding,
+  cErrorTitleY = cErrorBannerY+cErrorBannerPadding,
+  cErrorTitleZ = 0.1f,
+  cErrorTitleHeight = 0.075f,
+  cErrorMsgX = cErrorTitleX,
+  cErrorMsgY = cErrorTitleY+cErrorTitleHeight,
+  cErrorMsgZ = 0.1f,
+  cErrorMsgHeight = 0.04f;
+
+static f32 quadraticInterpolate(f32 from, f32 to, f32 t)
+{
+  return std::lerp(from, to, t*t);
+}
+
+static void renderErrorBanner(f32 timer)
+{
+  f32 shade = cErrorBannerEndShade;
+  if(timer < cErrorBannerShadeTime) {
+    shade = quadraticInterpolate(
+      cErrorBannerStartShade, cErrorBannerEndShade,
+      timer/cErrorBannerShadeTime);
+  }
+  render::color({shade, 0, 0});
+  render::rect(
+    {cErrorBannerX, cErrorBannerY, cErrorBannerZ},
+    {cErrorBannerW, cErrorBannerH});
+}
+
+void ScriptRuntime::renderCompileError() const
+{
+  // render::clear({0, 0, 0});
+  renderErrorBanner(mErrorTimer);
+  render::color();
+  render::text(
+    {cErrorTitleX, cErrorTitleY, cErrorTitleZ},
+    "Compile Error"_sv, cErrorTitleHeight);
+  render::text(
+    {cErrorMsgX, cErrorMsgY, cErrorMsgZ},
+    mErrorMessage.view(), cErrorMsgHeight);
+}
+
+void ScriptRuntime::renderRuntimeError() const
+{
+  // render::clear({0, 0, 0});
+  renderErrorBanner(mErrorTimer);
+  render::color();
+  render::text(
+    {cErrorTitleX, cErrorTitleY, cErrorTitleZ},
+    "Runtime Error"_sv, cErrorTitleHeight);
+  render::text(
+    {cErrorMsgX, cErrorMsgY, cErrorMsgZ},
+    mErrorMessage.view(), cErrorMsgHeight);
 }
 
 void ScriptRuntime::swapState(WrenHandle *nextStateHandle)

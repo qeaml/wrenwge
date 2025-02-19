@@ -18,7 +18,8 @@ public:
   }
 
   bool init() override {
-    return mRuntime.init(mInitialState);
+    mRuntime.init(mInitialState);
+    return true;
   }
 
   bool on(Event &evt) override {
