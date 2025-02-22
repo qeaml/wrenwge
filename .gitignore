@@ -2,3 +2,5 @@
 # generated files
 *.g.*
 __pycache__
+vc140.pdb
+
